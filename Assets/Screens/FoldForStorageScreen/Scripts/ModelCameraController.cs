@@ -7,19 +7,19 @@ using CW.Common;
 /// <summary>
 /// Camera controller supporting multi-touch orbit (rotate), pan, and pinch-to-zoom for mobile 3D inspection,
 /// with full mouse/scroll-wheel simulation in the Unity Editor and a smooth reset-to-original orientation feature.
+/// Preserves the exact scene camera framing without jumping or shifting off-center upon Play.
 /// </summary>
 [RequireComponent(typeof(Camera))]
 public class ModelCameraController : MonoBehaviour
 {
-    [Header("Target & Framing")]
-    [Tooltip("Transform to orbit around. If null, automatically discovers TutorialPlayer/TutorialRigRoot or projects along forward ray.")]
+    [Header("Target & Pivot")]
+    [Tooltip("Transform to orbit around. If null, automatically discovers Ghost_Drone or TutorialRigRoot.")]
     [SerializeField] private Transform targetPivotTransform;
     [SerializeField] private Vector3 customPivotOffset = Vector3.zero;
 
     [Header("Distance (Zoom) Limits")]
-    [SerializeField] private float minDistance = 0.6f;
-    [SerializeField] private float maxDistance = 7.0f;
-    [SerializeField] private float defaultDistance = 2.8f;
+    [SerializeField] private float minDistance = 0.5f;
+    [SerializeField] private float maxDistance = 8.0f;
 
     [Header("Pitch (Vertical) Limits")]
     [SerializeField] private float minPitch = -35f;
@@ -88,43 +88,65 @@ public class ModelCameraController : MonoBehaviour
     private bool mouse0StartedOverUI;
     private bool mousePanStartedOverUI;
 
+    public Vector3 InitialPivot => initialPivot;
+    public Vector3 CurrentPivot => currentPivot;
+
     private void Awake()
     {
+        // 1. Capture the camera's EXACT initial scene transform to guarantee zero jumping
         initialPosition = transform.position;
         initialRotation = transform.rotation;
 
         Vector3 euler = initialRotation.eulerAngles;
-        initialPitch = euler.x;
-        if (initialPitch > 180f) initialPitch -= 360f;
-        initialYaw = euler.y;
+        initialPitch = euler.x > 180f ? euler.x - 360f : euler.x;
+        initialYaw = euler.y > 180f ? euler.y - 360f : euler.y;
 
-        // Determine pivot
-        if (targetPivotTransform == null)
+        // 2. Discover the drone target to project depth along the camera's forward ray
+        Transform pivotTarget = targetPivotTransform;
+        if (pivotTarget == null)
         {
             var player = Object.FindFirstObjectByType<TutorialPlayer>();
             if (player != null && player.rigRoot != null)
             {
-                targetPivotTransform = player.rigRoot;
+                Transform drone = player.rigRoot.Find("Ghost_Drone");
+                pivotTarget = drone != null ? drone : player.rigRoot;
             }
-        }
-
-        if (targetPivotTransform != null)
-        {
-            Vector3 toTarget = (targetPivotTransform.position + customPivotOffset) - initialPosition;
-            float projectedDist = Vector3.Dot(toTarget, transform.forward);
-            initialDistance = Mathf.Clamp(projectedDist > 0.5f ? projectedDist : defaultDistance, minDistance, maxDistance);
-            initialPivot = targetPivotTransform.position + customPivotOffset;
         }
         else
         {
-            initialDistance = defaultDistance;
-            initialPivot = initialPosition + transform.forward * initialDistance;
+            // If targetPivotTransform is TutorialRigRoot, prioritize child Ghost_Drone for the true visual center
+            Transform drone = pivotTarget.Find("Ghost_Drone");
+            if (drone != null)
+            {
+                pivotTarget = drone;
+            }
         }
+
+        if (pivotTarget != null)
+        {
+            Vector3 toTarget = (pivotTarget.position + customPivotOffset) - initialPosition;
+            float projectedDist = Vector3.Dot(toTarget, transform.forward);
+            initialDistance = Mathf.Clamp(projectedDist > 0.5f ? projectedDist : 2.5f, minDistance, maxDistance);
+        }
+        else
+        {
+            initialDistance = Mathf.Clamp(2.5f, minDistance, maxDistance);
+        }
+
+        // 3. Compute pivot strictly along the camera's initial forward ray.
+        // This ensures pos = initialPivot - rot * forward * initialDistance exactly equals initialPosition on frame 0.
+        initialPivot = initialPosition + transform.forward * initialDistance;
 
         currentPivot = targetPivot = initialPivot;
         currentYaw = targetYaw = initialYaw;
         currentPitch = targetPitch = initialPitch;
         currentDistance = targetDistance = initialDistance;
+
+        // Apply immediately
+        transform.rotation = initialRotation;
+        transform.position = initialPosition;
+
+        Debug.Log($"[ModelCameraController] Initialized cleanly. Pivot: {initialPivot}, Camera: {initialPosition}, Distance: {initialDistance:F2}m, Pitch: {initialPitch:F1}°, Yaw: {initialYaw:F1}°");
     }
 
     private void Update()
@@ -228,7 +250,7 @@ public class ModelCameraController : MonoBehaviour
 
         InterruptReset();
 
-        // 1 Finger: Orbit / Rotate
+        // 1 Finger: Orbit / Rotate around pivot
         if (validTouches.Count == 1)
         {
             var t = validTouches[0];
@@ -287,7 +309,7 @@ public class ModelCameraController : MonoBehaviour
 
         Vector2 mouseDelta = mousePos - lastMousePos;
 
-        // Left Click Drag: Orbit
+        // Left Click Drag: Orbit around pivot
         if (CwInput.GetMouseIsHeld(0) && !mouse0StartedOverUI)
         {
             if (mouseDelta.sqrMagnitude > 0.001f)

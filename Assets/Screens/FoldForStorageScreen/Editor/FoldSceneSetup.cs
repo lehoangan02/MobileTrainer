@@ -18,6 +18,7 @@ public static class FoldSceneSetup
     private const string FoldScenePath = "Assets/Screens/FoldForStorageScreen/FoldForStorage.unity";
     private const string SelectScenePath = "Assets/Screens/TutorialSelectScreen/TutorialSelectScreen.unity";
     private const string GhostMatPath = "Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat";
+    private const string GhostRedMatPath = "Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost_Red.mat";
     private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
     private const string FontPath = "Assets/Screens/StartScreen/Fonts/MavenPro-VariableFont_wght SDF.asset";
 
@@ -79,6 +80,7 @@ public static class FoldSceneSetup
         TutorialGhostSkin ghostSkin = rigRootGo.GetComponent<TutorialGhostSkin>();
         if (ghostSkin == null) ghostSkin = rigRootGo.AddComponent<TutorialGhostSkin>();
         ghostSkin.hologramMaterial = AssetDatabase.LoadAssetAtPath<Material>(GhostMatPath);
+        ghostSkin.highlightMaterial = AssetDatabase.LoadAssetAtPath<Material>(GhostRedMatPath);
         ghostSkin.ghostRoots = new List<Transform>();
         string[] rootNames = { "Ghost_HandRight", "Ghost_HandLeft", "Ghost_Arm_BackRight", "Ghost_Drone", "Ghost_Battery_Upper" };
         foreach (var rName in rootNames)
@@ -91,13 +93,13 @@ public static class FoldSceneSetup
         ghostSkin.ApplySkin();
 
         // 2. Camera and Lighting
-        SetupCameraAndLighting();
+        ModelCameraController camCtrl = SetupCameraAndLighting(rigRootGo != null ? rigRootGo.transform : null);
 
         // 3. EventSystem with InputSystemUIInputModule
         SetupEventSystem();
 
         // 4. Setup TutorialController & Manager
-        FoldTutorialManager manager = SetupTutorialController(player);
+        FoldTutorialManager manager = SetupTutorialController(player, camCtrl, ghostSkin);
 
         // 5. Setup Canvas UI
         SetupCanvasUI(manager);
@@ -169,7 +171,7 @@ public static class FoldSceneSetup
         Debug.Log($"[FoldSceneSetup] Wired {wiredCount} buttons in TutorialSelectScreen and saved!");
     }
 
-    private static void SetupCameraAndLighting()
+    private static ModelCameraController SetupCameraAndLighting(Transform rigRoot)
     {
         Camera[] cams = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
         foreach (var c in cams)
@@ -190,6 +192,14 @@ public static class FoldSceneSetup
         cam.nearClipPlane = 0.1f;
         cam.farClipPlane = 100f;
 
+        ModelCameraController camCtrl = camGo.AddComponent<ModelCameraController>();
+        if (rigRoot != null)
+        {
+            SerializedObject camSo = new SerializedObject(camCtrl);
+            camSo.FindProperty("targetPivotTransform").objectReferenceValue = rigRoot;
+            camSo.ApplyModifiedProperties();
+        }
+
         Light[] lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
         foreach (var l in lights)
         {
@@ -202,6 +212,8 @@ public static class FoldSceneSetup
         light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
         light.color = new Color(1f, 0.96f, 0.9f);
         light.intensity = 1.2f;
+
+        return camCtrl;
     }
 
     private static void SetupEventSystem()
@@ -222,7 +234,7 @@ public static class FoldSceneSetup
         }
     }
 
-    private static FoldTutorialManager SetupTutorialController(TutorialPlayer player)
+    private static FoldTutorialManager SetupTutorialController(TutorialPlayer player, ModelCameraController camCtrl, TutorialGhostSkin ghostSkin)
     {
         GameObject ctrlGo = GameObject.Find("TutorialController");
         if (ctrlGo != null)
@@ -235,6 +247,8 @@ public static class FoldSceneSetup
 
         SerializedObject so = new SerializedObject(manager);
         so.FindProperty("player").objectReferenceValue = player;
+        so.FindProperty("cameraController").objectReferenceValue = camCtrl;
+        so.FindProperty("ghostSkin").objectReferenceValue = ghostSkin;
         so.FindProperty("selectScreenSceneName").stringValue = "TutorialSelectScreen";
         so.ApplyModifiedProperties();
 
@@ -271,9 +285,16 @@ public static class FoldSceneSetup
         // Back Button
         Button backBtn = CreateButton("BackButton", topPanel.transform, "BACK", font, 20);
         RectTransform bRt = backBtn.GetComponent<RectTransform>();
-        SetAnchor(bRt, 0f, 0.5f, 0f, 0.5f, new Vector2(90, 0), new Vector2(130, 48));
+        SetAnchor(bRt, 0f, 0.5f, 0f, 0.5f, new Vector2(180, 0), new Vector2(180, 60));
         SetButtonColor(backBtn, new Color(0.25f, 0.28f, 0.35f, 1f));
         UnityEventTools.AddPersistentListener(backBtn.onClick, manager.BackToTutorialSelect);
+
+        // Reset Button
+        Button resetBtn = CreateButton("ResetButton", topPanel.transform, "RESET", font, 20);
+        RectTransform rRt = resetBtn.GetComponent<RectTransform>();
+        SetAnchor(rRt, 1f, 0.5f, 1f, 0.5f, new Vector2(-180, 0), new Vector2(180, 60));
+        SetButtonColor(resetBtn, new Color(0.96f, 0.92f, 0.32f, 1f));
+        UnityEventTools.AddPersistentListener(resetBtn.onClick, manager.ResetCameraOrientation);
 
         // Step Counter Text
         TextMeshProUGUI stepCountText = CreateText("StepCounterText", topPanel.transform, "STEP 1 / 26", font, 20, TextAlignmentOptions.Center);
@@ -343,6 +364,25 @@ public static class FoldSceneSetup
         SetButtonColor(nextBtn, new Color(0.18f, 0.45f, 0.8f, 1f));
         UnityEventTools.AddPersistentListener(nextBtn.onClick, manager.NextStep);
 
+        // Playback Speed Controls
+        Button slowerBtn = CreateButton("SlowerButton", botPanel.transform, "SLOWER", font, 20);
+        RectTransform slowRt = slowerBtn.GetComponent<RectTransform>();
+        SetAnchor(slowRt, 0f, 0.32f, 0f, 0.32f, new Vector2(205, 0), new Vector2(230, 90));
+        SetButtonColor(slowerBtn, new Color(0.96f, 0.92f, 0.32f, 1f));
+        UnityEventTools.AddPersistentListener(slowerBtn.onClick, manager.DecreasePlaybackSpeed);
+
+        Button fasterBtn = CreateButton("FasterButton", botPanel.transform, "FASTER", font, 20);
+        RectTransform fastRt = fasterBtn.GetComponent<RectTransform>();
+        SetAnchor(fastRt, 1f, 0.32f, 1f, 0.32f, new Vector2(-205, 0), new Vector2(230, 90));
+        SetButtonColor(fasterBtn, new Color(0.96f, 0.92f, 0.32f, 1f));
+        UnityEventTools.AddPersistentListener(fasterBtn.onClick, manager.IncreasePlaybackSpeed);
+
+        TextMeshProUGUI speedTmp = CreateText("SpeedText", botPanel.transform, "SPEED: 1.0x", font, 22, TextAlignmentOptions.Center);
+        RectTransform spdRt = speedTmp.GetComponent<RectTransform>();
+        SetAnchor(spdRt, 0.5f, 0.53f, 0.5f, 0.53f, Vector2.zero, new Vector2(300, 32));
+        speedTmp.color = new Color(0.35f, 0.75f, 1f, 1f);
+        speedTmp.fontStyle = FontStyles.Bold;
+
         // Bind all properties on manager
         SerializedObject so = new SerializedObject(manager);
         so.FindProperty("titleText").objectReferenceValue = titleText;
@@ -352,6 +392,9 @@ public static class FoldSceneSetup
         so.FindProperty("timelineSlider").objectReferenceValue = slider;
         so.FindProperty("prevButton").objectReferenceValue = prevBtn;
         so.FindProperty("nextButton").objectReferenceValue = nextBtn;
+        so.FindProperty("speedText").objectReferenceValue = speedTmp;
+        so.FindProperty("slowerButton").objectReferenceValue = slowerBtn;
+        so.FindProperty("fasterButton").objectReferenceValue = fasterBtn;
         so.ApplyModifiedProperties();
     }
 
