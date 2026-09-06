@@ -17,7 +17,7 @@ public static class FoldSceneSetup
 {
     private const string FoldScenePath = "Assets/Screens/FoldForStorageScreen/FoldForStorage.unity";
     private const string SelectScenePath = "Assets/Screens/TutorialSelectScreen/TutorialSelectScreen.unity";
-    private const string GhostMatPath = "Assets/Materials/M_TutorialGhost.mat";
+    private const string GhostMatPath = "Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat";
     private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
     private const string FontPath = "Assets/Screens/StartScreen/Fonts/MavenPro-VariableFont_wght SDF.asset";
 

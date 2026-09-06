@@ -75,13 +75,13 @@ In this module:
   5. `Ghost_HandRight`: Right hand bone hierarchy with an `XRHand_Wrist` joint tree driving a `SkinnedMeshRenderer`.
 
 ### 3.2. Geometry Attachments
-* **Drone Geometry**: 146 sub-objects under `Ghost_Drone` and `Ghost_Battery_Upper` have `MeshFilter` and `MeshRenderer` components referencing submeshes of `Assets/DroneModel/VEGA 2.0 10062026.obj`.
-* **Hand Geometry**: `LeftHand` and `RightHand` child objects have `SkinnedMeshRenderer` components referencing the skinned meshes from `LeftHand.fbx` and `RightHand.fbx`.
+* **Drone Geometry**: 146 sub-objects under `Ghost_Drone` and `Ghost_Battery_Upper` have `MeshFilter` and `MeshRenderer` components referencing submeshes of `Assets/Screens/FoldForStorageScreen/Models/VEGA 2.0 10062026.obj`.
+* **Hand Geometry**: `LeftHand` and `RightHand` child objects have `SkinnedMeshRenderer` components referencing the skinned meshes from `LeftHand.fbx` and `RightHand.fbx` under `Assets/Screens/FoldForStorageScreen/Models/Hands/`.
 
 ### 3.3. Hologram Ghost Skin (`TutorialGhostSkin.cs`)
 To match the original holographic visualization style and avoid untextured/magenta artifacts:
 * `TutorialGhostSkin.cs` is attached to `TutorialRigRoot`.
-* On `Awake()` (or via the Inspector context menu `Apply Skin`), it traverses the renderers under the 5 ghost roots and assigns [`M_TutorialGhost.mat`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Materials/M_TutorialGhost.mat).
+* On `Awake()` (or via the Inspector context menu `Apply Skin`), it traverses the renderers under the 5 ghost roots and assigns [`M_TutorialGhost.mat`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat).
 * `M_TutorialGhost.mat` uses the Universal Render Pipeline (URP) Lit shader configured for transparency (`_Surface = 1`, `_Blend = 0`) with an emission tint and a translucent cyan base color (`RGBA: 0.37, 0.91, 0.93, 0.51`).
 
 ---
@@ -198,8 +198,8 @@ An editor utility is located at `Assets/Screens/FoldForStorageScreen/Editor/Fold
 | `Assets/Screens/FoldForStorageScreen/Editor/FoldSceneSetup.cs` | Editor automation script for scene generation and button wiring. |
 | `Assets/Screens/FoldForStorageScreen/Anim/*.anim` | 25 sliced animation clips corresponding to each folding step. |
 | `Assets/Screens/FoldForStorageScreen/Anim/TutorialRigRoot.controller` | Animator controller binding clips to the rig. |
-| `Assets/DroneModel/VEGA 2.0 10062026.obj` | 3D drone mesh file referenced by the 146 rig MeshFilters. |
-| `Assets/DroneModel/Hands/LeftHand.fbx` & `RightHand.fbx` | 3D hand models referenced by the SkinnedMeshRenderers. |
-| `Assets/Materials/M_TutorialGhost.mat` | Translucent cyan holographic material applied to ghosts. |
+| `Assets/Screens/FoldForStorageScreen/Models/VEGA 2.0 10062026.obj` | 3D drone mesh file referenced by the 146 rig MeshFilters. |
+| `Assets/Screens/FoldForStorageScreen/Models/Hands/LeftHand.fbx` & `RightHand.fbx` | 3D hand models referenced by the SkinnedMeshRenderers. |
+| `Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat` | Translucent cyan holographic material applied to ghosts. |
 | `Assets/Screens/TutorialSelectScreen/TutorialSelectController.cs` | Handles scene transitions from the select menu. |
 | `ProjectSettings/EditorBuildSettings.asset` | Build settings registering `FoldForStorage.unity` in the build index. |
