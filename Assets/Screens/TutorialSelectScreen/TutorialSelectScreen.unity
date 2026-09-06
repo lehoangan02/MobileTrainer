@@ -208,7 +208,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1253816902255873629, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Name
-      value: Tap Button (LeanButton) (2)
+      value: Tap Button (LeanButton)
       objectReference: {fileID: 0}
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Pivot.x
@@ -289,6 +289,12 @@ PrefabInstance:
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8268042292096681653, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
+      propertyPath: m_Text
+      value: '*WORK
+
+        IN PROGRESS'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -415,7 +421,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1253816902255873629, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Name
-      value: Tap Button (LeanButton) (4)
+      value: Tap Button (LeanButton)
       objectReference: {fileID: 0}
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Pivot.x
@@ -496,6 +502,12 @@ PrefabInstance:
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8268042292096681653, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
+      propertyPath: m_Text
+      value: '*WORK
+
+        IN PROGRESS'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -609,7 +621,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1253816902255873629, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Name
-      value: Tap Button (LeanButton) (3)
+      value: Tap Button (LeanButton)
       objectReference: {fileID: 0}
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Pivot.x
@@ -690,6 +702,12 @@ PrefabInstance:
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8268042292096681653, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
+      propertyPath: m_Text
+      value: '*WORK
+
+        IN PROGRESS'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -711,7 +729,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1253816902255873629, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Name
-      value: Tap Button (LeanButton) (1)
+      value: Tap Button (LeanButton)
       objectReference: {fileID: 0}
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_Pivot.x
@@ -792,6 +810,12 @@ PrefabInstance:
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8268042292096681653, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
+      propertyPath: m_Text
+      value: 'FOLD
+
+        FOR STORAGE'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1199,6 +1223,12 @@ PrefabInstance:
     - target: {fileID: 4379348604587378014, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8268042292096681653, guid: fff8fd86bdc5f490db823d6fdd85351e, type: 3}
+      propertyPath: m_Text
+      value: 'DEPLOY
+
+        FOR FLIGHT'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
