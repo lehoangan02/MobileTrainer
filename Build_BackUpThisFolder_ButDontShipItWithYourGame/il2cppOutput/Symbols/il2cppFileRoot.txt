@@ -1,0 +1,1 @@
+/Volumes/Baracuda/Unity/MobileTrainer/Library/Bee/artifacts/Android/il2cppOutput/cpp

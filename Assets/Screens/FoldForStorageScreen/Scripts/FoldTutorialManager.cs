@@ -28,12 +28,17 @@ public class FoldTutorialManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI instructionText;
     [SerializeField] private TextMeshProUGUI stepCounterText;
     [SerializeField] private TextMeshProUGUI playPauseButtonText;
+    [SerializeField] private Text playPauseButtonLegacyText;
     [SerializeField] private Slider timelineSlider;
-    [SerializeField] private Button nextButton;
-    [SerializeField] private Button prevButton;
+    [SerializeField] private Selectable nextButton;
+    [SerializeField] private Selectable prevButton;
 
     [Header("Scene Navigation")]
     [SerializeField] private string selectScreenSceneName = "TutorialSelectScreen";
+    [SerializeField] private SceneLoader sceneLoader;
+
+    [Header("Camera Control")]
+    [SerializeField] private ModelCameraController cameraController;
 
     [Header("Tutorial Sequence (26 Steps)")]
     [SerializeField] private List<Step> steps = new();
@@ -49,6 +54,16 @@ public class FoldTutorialManager : MonoBehaviour
         if (player == null)
         {
             player = UnityEngine.Object.FindFirstObjectByType<TutorialPlayer>();
+        }
+
+        if (sceneLoader == null)
+        {
+            sceneLoader = UnityEngine.Object.FindFirstObjectByType<SceneLoader>();
+        }
+
+        if (cameraController == null)
+        {
+            cameraController = UnityEngine.Object.FindFirstObjectByType<ModelCameraController>();
         }
 
         if (timelineSlider != null)
@@ -72,9 +87,14 @@ public class FoldTutorialManager : MonoBehaviour
             timelineSlider.SetValueWithoutNotify(player.Progress01);
         }
 
+        string playPauseStr = player.IsPlaying ? "PAUSE" : "PLAY";
         if (playPauseButtonText != null)
         {
-            playPauseButtonText.text = player.IsPlaying ? "PAUSE" : "PLAY";
+            playPauseButtonText.text = playPauseStr;
+        }
+        if (playPauseButtonLegacyText != null)
+        {
+            playPauseButtonLegacyText.text = playPauseStr;
         }
     }
 
@@ -150,10 +170,14 @@ public class FoldTutorialManager : MonoBehaviour
 
     public void BackToTutorialSelect()
     {
-        SceneLoader loader = UnityEngine.Object.FindFirstObjectByType<SceneLoader>();
-        if (loader != null)
+        if (sceneLoader == null)
         {
-            loader.LoadScene(selectScreenSceneName);
+            sceneLoader = UnityEngine.Object.FindFirstObjectByType<SceneLoader>();
+        }
+
+        if (sceneLoader != null)
+        {
+            sceneLoader.LoadScene(selectScreenSceneName);
         }
         else
         {
@@ -164,6 +188,25 @@ public class FoldTutorialManager : MonoBehaviour
     public void ReturnToSelectScreen()
     {
         BackToTutorialSelect();
+    }
+
+    /// <summary>
+    /// Resets the 3D model camera back to its initial original position, rotation, and distance.
+    /// </summary>
+    public void ResetCameraOrientation()
+    {
+        if (cameraController != null)
+        {
+            cameraController.ResetOrientation();
+        }
+        else
+        {
+            var cam = UnityEngine.Object.FindFirstObjectByType<ModelCameraController>();
+            if (cam != null)
+            {
+                cam.ResetOrientation();
+            }
+        }
     }
 
 #if UNITY_EDITOR

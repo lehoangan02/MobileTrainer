@@ -56,6 +56,16 @@ flowchart TD
     GhostSkin -->|Applies Hologram Material| HandsMesh
 ```
 
+### 2.1. Core Script Attachment & Host GameObjects
+
+In the scene [`FoldForStorage.unity`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/FoldForStorage.unity), the three core scripts are attached to specific root-level GameObjects:
+
+| Script | Host GameObject | Hierarchy Location | Purpose |
+| :--- | :--- | :--- | :--- |
+| [`FoldTutorialManager.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs) | **`TutorialController`** | Root level | High-level sequencer managing 26 steps, UI text updates, slider scrubbing, and Next/Prev/Back button events. |
+| [`TutorialPlayer.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialPlayer.cs) | **`TutorialRigRoot`** | Root level | Low-level playback engine using Unity's Playables API to directly drive the `Animator` component with step clips. |
+| [`TutorialGhostSkin.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialGhostSkin.cs) | **`TutorialRigRoot`** | Root level | Traverses all 5 child ghost branches under `TutorialRigRoot` on `Awake()` and applies `M_TutorialGhost.mat` to all renderers. |
+
 ---
 
 ## 3. How the 3D Animation & Rig Work
@@ -203,3 +213,52 @@ An editor utility is located at `Assets/Screens/FoldForStorageScreen/Editor/Fold
 | `Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat` | Translucent cyan holographic material applied to ghosts. |
 | `Assets/Screens/TutorialSelectScreen/TutorialSelectController.cs` | Handles scene transitions from the select menu. |
 | `ProjectSettings/EditorBuildSettings.asset` | Build settings registering `FoldForStorage.unity` in the build index. |
+
+---
+
+## 9. File Migration & Relocation Mapping (From Where to Where)
+
+To ensure the **Fold For Storage** module is completely self-contained and modular (allowing it to be exported as a `.unitypackage` or moved without external dangling dependencies), all tutorial-specific 3D models, hands, materials, and textures were relocated from root `Assets/` into dedicated subdirectories within `Assets/Screens/FoldForStorageScreen/`.
+
+> [!IMPORTANT]
+> **GUID & Reference Preservation**:
+> In Unity, assets are bound across scenes, prefabs, and materials by their 128-bit GUID stored in each file's corresponding `.meta` file.
+> During relocation, every asset file was moved simultaneously with its `.meta` file (e.g., `mv <file> <dest>` and `mv <file>.meta <dest>`). This preserved 100% of internal GUIDs, guaranteeing that:
+> * All 111 submesh filter references in `FoldForStorage.unity` remained attached to `VEGA 2.0 10062026.obj`.
+> * Hand `SkinnedMeshRenderer` components remained attached to `LeftHand.fbx` and `RightHand.fbx`.
+> * All 149 renderer material bindings and `TutorialGhostSkin.hologramMaterial` remained attached to `M_TutorialGhost.mat`.
+> * Material texture map channels (normal, metallic, roughness, AO) remained attached to their respective texture files.
+
+### 9.1. Migration Inventory (Source $\rightarrow$ Destination)
+
+| Original Source Path | New Destination Path | Category | Description |
+| :--- | :--- | :--- | :--- |
+| `Assets/DroneModel/VEGA 2.0 10062026.obj` | `Assets/Screens/FoldForStorageScreen/Models/VEGA 2.0 10062026.obj` | 3D Mesh | Main 1.9 GB drone mesh containing all submeshes for the 146 rig nodes. |
+| `Assets/DroneModel/VEGA 2.0 10062026.mtl` | `Assets/Screens/FoldForStorageScreen/Models/VEGA 2.0 10062026.mtl` | Material Def | Wavefront material definitions accompanying the OBJ drone model. |
+| `Assets/DroneModel/Hands/LeftHand.fbx` | `Assets/Screens/FoldForStorageScreen/Models/Hands/LeftHand.fbx` | 3D Rig | Skinned left human hand model and bone hierarchy. |
+| `Assets/DroneModel/Hands/RightHand.fbx` | `Assets/Screens/FoldForStorageScreen/Models/Hands/RightHand.fbx` | 3D Rig | Skinned right human hand model and bone hierarchy. |
+| `Assets/DroneModel/Hands/LeftHandAndroidXR.fbx` | `Assets/Screens/FoldForStorageScreen/Models/Hands/LeftHandAndroidXR.fbx` | 3D Rig | Alternate Android XR left hand model. |
+| `Assets/DroneModel/Hands/RightHandAndroidXR.fbx` | `Assets/Screens/FoldForStorageScreen/Models/Hands/RightHandAndroidXR.fbx` | 3D Rig | Alternate Android XR right hand model. |
+| `Assets/Materials/M_TutorialGhost.mat` | `Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat` | Material | URP Lit translucent cyan holographic material (`RGBA: 0.37, 0.91, 0.93, 0.51`). |
+| `Assets/Materials/CarbonFiber.mat` | `Assets/Screens/FoldForStorageScreen/Materials/CarbonFiber.mat` | Material | Carbon fiber surface material mapped to texture normal/metallic maps. |
+| `Assets/Materials/twisted_metal_wire.mat` | `Assets/Screens/FoldForStorageScreen/Materials/twisted_metal_wire.mat` | Material | Wire bundle material mapped to 2K metallic/roughness textures. |
+| `Assets/Materials/Matte_Black.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Matte_Black.mat` | Material | Fuselage matte black URP Lit material. |
+| `Assets/Materials/Shiny_Black.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Shiny_Black.mat` | Material | Glossy black accent material. |
+| `Assets/Materials/Steel.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Steel.mat` | Material | Metallic steel latch, pin, and hinge material. |
+| `Assets/Materials/Blue.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Blue.mat` | Material | Blue connector/highlight material. |
+| `Assets/Materials/Red.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Red.mat` | Material | Red safety latch highlight material. |
+| `Assets/Materials/Golden.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Golden.mat` | Material | Gold connector terminal material. |
+| `Assets/Materials/Grey.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Grey.mat` | Material | Neutral grey structural material. |
+| `Assets/Materials/Yellow.mat` | `Assets/Screens/FoldForStorageScreen/Materials/Yellow.mat` | Material | High-visibility yellow caution material. |
+| `Assets/Textures/carbon-fiber-unity/*` | `Assets/Screens/FoldForStorageScreen/Textures/carbon-fiber-unity/*` | Textures | Normal map, metallic map, height map, AO map, and albedo textures. |
+| `Assets/Textures/twisted_metallic_wire/*` | `Assets/Screens/FoldForStorageScreen/Textures/twisted_metallic_wire/*` | Textures | 2K albedo, normal direct/openGL, metallic, roughness, and AO textures. |
+| *(External / Master Slices)* | `Assets/Screens/FoldForStorageScreen/Anim/*.anim` | Animations | 25 sliced step clips + `set_fan_blades.anim` brought into the module anim folder. |
+
+### 9.2. Script Code Constants Updated
+
+Following the asset relocation, code path constants in editor tooling were updated:
+
+* **[`FoldSceneSetup.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Editor/FoldSceneSetup.cs#L20)**:
+  * **Before**: `private const string GhostMatPath = "Assets/Materials/M_TutorialGhost.mat";`
+  * **After**: `private const string GhostMatPath = "Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat";`
+
