@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class SceneLoader : MonoBehaviour
 {
     [Header("Transition Settings")]
-    [SerializeField] private float fadeDuration = 0.5f;
+    [SerializeField] private float fadeOutDuration = 0.5f;
+    [SerializeField] private float fadeInDuration = 0.6f;
     [SerializeField] private string targetScene = "TutorialSelectScreen";
 
     private CanvasGroup canvasGroup;
@@ -38,12 +39,13 @@ public class SceneLoader : MonoBehaviour
         {
             canvasGroup.blocksRaycasts = true;
 
-            // 1. Fade Out to Black in current scene (0 -> 1)
+            // 1. Fade Out to Black in current scene (0 -> 1) with smooth easing
             float t = 0f;
-            while (t < fadeDuration)
+            while (t < fadeOutDuration)
             {
-                t += Time.unscaledDeltaTime;
-                canvasGroup.alpha = Mathf.Clamp01(t / fadeDuration);
+                t += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+                float progress = Mathf.Clamp01(t / fadeOutDuration);
+                canvasGroup.alpha = Mathf.SmoothStep(0f, 1f, progress);
                 yield return null;
             }
             canvasGroup.alpha = 1f;
@@ -59,17 +61,20 @@ public class SceneLoader : MonoBehaviour
             yield return null;
         }
 
-        // 4. Wait one frame for the new scene to initialize
+        // 4. Wait for the new scene to finish its first full render frame so any hitch has passed
+        yield return new WaitForEndOfFrame();
         yield return null;
 
         // 5. Fade In from Black to transparent in the new scene (1 -> 0)
         if (canvasGroup != null)
         {
             float t = 0f;
-            while (t < fadeDuration)
+            while (t < fadeInDuration)
             {
-                t += Time.unscaledDeltaTime;
-                canvasGroup.alpha = 1f - Mathf.Clamp01(t / fadeDuration);
+                // Clamp delta time to avoid frame spikes from eating the animation
+                t += Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+                float progress = Mathf.Clamp01(t / fadeInDuration);
+                canvasGroup.alpha = Mathf.SmoothStep(1f, 0f, progress);
                 yield return null;
             }
             canvasGroup.alpha = 0f;
