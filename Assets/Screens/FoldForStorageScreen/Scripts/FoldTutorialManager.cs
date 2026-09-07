@@ -343,6 +343,17 @@ public class FoldTutorialManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Refreshes the highlight on the currently active step (used when themes are switched).
+    /// </summary>
+    public void RefreshCurrentHighlight()
+    {
+        if (steps != null && currentStepIndex >= 0 && currentStepIndex < steps.Count)
+        {
+            UpdateStepHighlight(steps[currentStepIndex], currentStepIndex);
+        }
+    }
+
+    /// <summary>
     /// Returns the active mechanical component names on the drone that change during each step.
     /// </summary>
     public static string[] GetDefaultHighlightNames(int index, string title, AnimationClip clip)
@@ -411,14 +422,13 @@ public class FoldTutorialManager : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    [ContextMenu("Populate 26 Fold Steps")]
+    [ContextMenu("Populate 25 Fold Steps")]
     public void PopulateDefaultSteps()
     {
         string animFolder = "Assets/Screens/FoldForStorageScreen/Anim";
 
         (string title, string instruction, string clipName, string[] highlightParts)[] defs = new[]
         {
-            ("Release the battery", "Grab the battery handle and rotate it until the latch releases.", "Release_Battery.anim", new[] { "Ghost_Battery_Upper" }),
             ("Lift the battery off", "Keep hold of the handle and lift the upper battery unit clear of the drone.", "Release_Battery.anim", new[] { "Ghost_Battery_Upper" }),
             ("Set all fan blades", "Rotate each of the eight fan blades into the folding range.", "set_fan_blades.anim", new[] { "Fan_1", "Fan_2", "Fan_3", "Fan_4" }),
             ("Open the right body latch", "Grab the right body latch and swing it fully open.", "open_body_right_latch.anim", new[] { "Clamp_Body_Right_Latch" }),

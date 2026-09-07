@@ -2,7 +2,7 @@
 
 ## 1. Overview & Purpose
 
-The **Fold For Storage** screen (`Assets/Screens/FoldForStorageScreen/FoldForStorage.unity`) is an interactive 3D training module within the **MobileTrainer** application. Its objective is to teach learners the complete **26-step mechanical procedure** required to fold the Vega 2.0 industrial drone from its operational configuration into its compact transport/storage configuration.
+The **Fold For Storage** screen (`Assets/Screens/FoldForStorageScreen/FoldForStorage.unity`) is an interactive 3D training module within the **MobileTrainer** application. Its objective is to teach learners the complete **25-step mechanical procedure** required to fold the Vega 2.0 industrial drone from its operational configuration into its compact transport/storage configuration.
 
 Unlike static video tutorials or PDF manuals, this system provides:
 * **True 3D Visualization**: Real-time rendering of drone sub-assemblies (arms, sliders, latches, landing gear legs, and propellers) moving in 3D space.
@@ -62,7 +62,7 @@ In the scene [`FoldForStorage.unity`](file:///Volumes/Baracuda/Unity/MobileTrain
 
 | Script | Host GameObject | Hierarchy Location | Purpose |
 | :--- | :--- | :--- | :--- |
-| [`FoldTutorialManager.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs) | **`TutorialController`** | Root level | High-level sequencer managing 26 steps, UI text updates, slider scrubbing, and Next/Prev/Back button events. |
+| [`FoldTutorialManager.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs) | **`TutorialController`** | Root level | High-level sequencer managing 25 steps, UI text updates, slider scrubbing, and Next/Prev/Back button events. |
 | [`TutorialPlayer.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialPlayer.cs) | **`TutorialRigRoot`** | Root level | Low-level playback engine using Unity's Playables API to directly drive the `Animator` component with step clips. |
 | [`TutorialGhostSkin.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialGhostSkin.cs) | **`TutorialRigRoot`** | Root level | Traverses all 5 child ghost branches under `TutorialRigRoot` on `Awake()` and applies `M_TutorialGhost.mat` to all renderers. |
 
@@ -88,11 +88,28 @@ In this module:
 * **Drone Geometry**: 146 sub-objects under `Ghost_Drone` and `Ghost_Battery_Upper` have `MeshFilter` and `MeshRenderer` components referencing submeshes of `Assets/Screens/FoldForStorageScreen/Models/VEGA 2.0 10062026.obj`.
 * **Hand Geometry**: `LeftHand` and `RightHand` child objects have `SkinnedMeshRenderer` components referencing the skinned meshes from `LeftHand.fbx` and `RightHand.fbx` under `Assets/Screens/FoldForStorageScreen/Models/Hands/`.
 
-### 3.3. Hologram Ghost Skin (`TutorialGhostSkin.cs`)
-To match the original holographic visualization style and avoid untextured/magenta artifacts:
-* `TutorialGhostSkin.cs` is attached to `TutorialRigRoot`.
-* On `Awake()` (or via the Inspector context menu `Apply Skin`), it traverses the renderers under the 5 ghost roots and assigns [`M_TutorialGhost.mat`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat).
-* `M_TutorialGhost.mat` uses the Universal Render Pipeline (URP) Lit shader configured for transparency (`_Surface = 1`, `_Blend = 0`) with an emission tint and a translucent cyan base color (`RGBA: 0.37, 0.91, 0.93, 0.51`).
+### 3.3. Multi-Theme Ghost Skin & Build Switcher (`TutorialGhostSkin.cs`)
+To support multiple presentation and testing styles requested by instructors, the drone and hands support **3 distinct visual themes** that can be switched with 1 click:
+
+| Version | Drone Skin Material | Active Part Highlight Material | Ghost Hands Material |
+| :--- | :--- | :--- | :--- |
+| **Version 1 (Default)** | `M_TutorialGhost.mat` (Cyan) | `M_TutorialGhost_Red.mat` (Red Emission) | `M_TutorialGhost.mat` (Cyan) |
+| **Version 2** | `CarbonFiber.mat` (Carbon Fiber) | `M_TutorialGhost_Yellow.mat` (Yellow Emission) | `M_TutorialGhost.mat` (Cyan) |
+| **Version 3** | `CarbonFiber.mat` (Carbon Fiber) | `M_TutorialGhost.mat` (Cyan Hologram) | `M_TutorialGhost.mat` (Cyan) |
+
+#### How to Switch Between the 3 Versions:
+1. **Unity Top Menu Bar (1-Click)**:
+   Navigate to `Tools > Fold Tutorial Theme`:
+   - `Version 1: Cyan Ghost + Red Highlight`
+   - `Version 2: Carbon Fiber + Yellow Highlight`
+   - `Version 3: Carbon Fiber + Cyan Highlight`
+   *(Automatically sets materials, skins the rig, and saves the scene ready for build)*.
+2. **Inspector Quick-Switch Buttons**:
+   Select `TutorialRigRoot` in the Hierarchy. The custom Inspector for `TutorialGhostSkin` features 3 large color-coded buttons at the top to toggle between the 3 versions instantly.
+3. **Play Mode Live Hotkeys**:
+   During Play mode or in development builds, press **`1`**, **`2`**, or **`3`** on your keyboard to instantly swap themes in real time, with the current step highlight updating synchronously.
+4. **Batch Building All 3 APKs**:
+   Run `Tools > Fold Tutorial Theme > Batch Build All 3 APKs...` to automatically compile 3 separate APKs (`MobileTrainer_v1_CyanGhost_RedHighlight.apk`, `MobileTrainer_v2_CarbonFiber_YellowHighlight.apk`, `MobileTrainer_v3_CarbonFiber_CyanHighlight.apk`) into your chosen output folder.
 
 ---
 
@@ -116,42 +133,41 @@ Instead of using a complex Animator state machine with hundreds of transitions, 
 
 `FoldTutorialManager.cs` sits on the `TutorialController` GameObject and orchestrates the user tutorial flow.
 
-### The 26 Fold Steps
+### The 25 Fold Steps
 
 | Step # | Title | Instruction Text | Animation Clip (.anim) |
 | :---: | :--- | :--- | :--- |
-| **1** | Release the battery | Grab the battery handle and rotate it until the latch releases. | `Release_Battery.anim` |
-| **2** | Lift the battery off | Keep hold of the handle and lift the upper battery unit clear of the drone. | `Release_Battery.anim` |
-| **3** | Set all fan blades | Rotate each of the eight fan blades into the folding range. | `set_fan_blades.anim` |
-| **4** | Open the right body latch | Grab the right body latch and swing it fully open. | `open_body_right_latch.anim` |
-| **5** | Slide the right body slider | Slide the right body slider back past its stop. | `slide_body_right_slider.anim` |
-| **6** | Close the right body latch | Swing the right body latch shut to lock the slider. | `close_body_right_latch.anim` |
-| **7** | Open the left body latch | Grab the left body latch and swing it fully open. | `open_body_left_latch.anim` |
-| **8** | Slide the left body slider | Slide the left body slider back past its stop. | `slide_body_left_slider.anim` |
-| **9** | Close the left body latch | Swing the left body latch shut to lock the slider. | `close_body_left_latch.anim` |
-| **10** | Fold both halves | Grab both halves of the drone and rotate them inward together past 85 degrees. | `fold_both_body_arms.anim` |
-| **11** | Open the front-right latch | Grab the front-right latch and swing it fully open. | `open_front_right_latch.anim` |
-| **12** | Slide the front-right slider | Slide the front-right slider back past its stop. | `slide_front_right_slider.anim` |
-| **13** | Close the front-right latch | Swing the front-right latch shut to lock the slider. | `close_front_right_latch.anim` |
-| **14** | Open the front-left latch | Grab the front-left latch and swing it fully open. | `open_front_left_latch.anim` |
-| **15** | Slide the front-left slider | Slide the front-left slider back past its stop. | `slide_front_left_slider.anim` |
-| **16** | Close the front-left latch | Swing the front-left latch shut to lock the slider. | `close_front_left_latch.anim` |
-| **17** | Fold the front arms | Grab both front sub-arms and rotate them together past 90 degrees. | `fold_both_front_subarms.anim` |
-| **18** | Open the back-right latch | Grab the back-right latch and swing it fully open. | `open_back_right_latch.anim` |
-| **19** | Slide the back-right slider | Slide the back-right slider back past its stop. | `slide_back_right_slider.anim` |
-| **20** | Close the back-right latch | Swing the back-right latch shut to lock the slider. | `close_back_right_latch.anim` |
-| **21** | Open the back-left latch | Grab the back-left latch and swing it fully open. | `open_back_left_latch.anim` |
-| **22** | Slide the back-left slider | Slide the back-left slider back past its stop. | `slide_back_left_slider.anim` |
-| **23** | Close the back-left latch | Swing the back-left latch shut to lock the slider. | `close_back_left_latch.anim` |
-| **24** | Fold the back arms | Grab both rear sub-arms and rotate them together past 90 degrees. | `fold_both_back_subarms.anim` |
-| **25** | Fold one landing gear | Poke the button on each leg of either landing gear, then fold both of its legs past 85 degrees. | `fold_one_pair_landing_gear.anim` |
-| **26** | Fold the other landing gear | Do the same on the remaining landing gear: poke each leg button, then fold both legs. | `fold_another_pair_landing_gear.anim` |
+| **1** | Lift the battery off | Keep hold of the handle and lift the upper battery unit clear of the drone. | `Release_Battery.anim` |
+| **2** | Set all fan blades | Rotate each of the eight fan blades into the folding range. | `set_fan_blades.anim` |
+| **3** | Open the right body latch | Grab the right body latch and swing it fully open. | `open_body_right_latch.anim` |
+| **4** | Slide the right body slider | Slide the right body slider back past its stop. | `slide_body_right_slider.anim` |
+| **5** | Close the right body latch | Swing the right body latch shut to lock the slider. | `close_body_right_latch.anim` |
+| **6** | Open the left body latch | Grab the left body latch and swing it fully open. | `open_body_left_latch.anim` |
+| **7** | Slide the left body slider | Slide the left body slider back past its stop. | `slide_body_left_slider.anim` |
+| **8** | Close the left body latch | Swing the left body latch shut to lock the slider. | `close_body_left_latch.anim` |
+| **9** | Fold both halves | Grab both halves of the drone and rotate them inward together past 85 degrees. | `fold_both_body_arms.anim` |
+| **10** | Open the front-right latch | Grab the front-right latch and swing it fully open. | `open_front_right_latch.anim` |
+| **11** | Slide the front-right slider | Slide the front-right slider back past its stop. | `slide_front_right_slider.anim` |
+| **12** | Close the front-right latch | Swing the front-right latch shut to lock the slider. | `close_front_right_latch.anim` |
+| **13** | Open the front-left latch | Grab the front-left latch and swing it fully open. | `open_front_left_latch.anim` |
+| **14** | Slide the front-left slider | Slide the front-left slider back past its stop. | `slide_front_left_slider.anim` |
+| **15** | Close the front-left latch | Swing the front-left latch shut to lock the slider. | `close_front_left_latch.anim` |
+| **16** | Fold the front arms | Grab both front sub-arms and rotate them together past 90 degrees. | `fold_both_front_subarms.anim` |
+| **17** | Open the back-right latch | Grab the back-right latch and swing it fully open. | `open_back_right_latch.anim` |
+| **18** | Slide the back-right slider | Slide the back-right slider back past its stop. | `slide_back_right_slider.anim` |
+| **19** | Close the back-right latch | Swing the back-right latch shut to lock the slider. | `close_back_right_latch.anim` |
+| **20** | Open the back-left latch | Grab the back-left latch and swing it fully open. | `open_back_left_latch.anim` |
+| **21** | Slide the back-left slider | Slide the back-left slider back past its stop. | `slide_back_left_slider.anim` |
+| **22** | Close the back-left latch | Swing the back-left latch shut to lock the slider. | `close_back_left_latch.anim` |
+| **23** | Fold the back arms | Grab both rear sub-arms and rotate them together past 90 degrees. | `fold_both_back_subarms.anim` |
+| **24** | Fold one landing gear | Poke the button on each leg of either landing gear, then fold both of its legs past 85 degrees. | `fold_one_pair_landing_gear.anim` |
+| **25** | Fold the other landing gear | Do the same on the remaining landing gear: poke each leg button, then fold both legs. | `fold_another_pair_landing_gear.anim` |
 
 ### Step Transition Logic (`GoToStep(int stepIndex)`)
 1. Clamps `stepIndex` within `[0, steps.Count - 1]`.
 2. Updates `stepCounterText` to `STEP {stepIndex + 1} / {steps.Count}`.
 3. Updates `titleText` and `instructionText` with step details.
-4. Enables/disables `prevButton` and `nextButton` at sequence boundaries (Step 1 disables `PREV`, Step 26 disables `NEXT`).
+4. Enables/disables `prevButton` and `nextButton` at sequence boundaries (Step 1 disables `PREV`, Step 25 disables `NEXT`).
 5. Calls `player.PlayClip(step.clip)` with step-specific trim timing.
 6. Resets timeline slider to 0.
 
@@ -188,7 +204,7 @@ An editor utility is located at `Assets/Screens/FoldForStorageScreen/Editor/Fold
   * Verifies `TutorialRigRoot`, sets up `TutorialPlayer` and `TutorialGhostSkin`.
   * Creates or updates the camera, directional lighting, and `EventSystem`.
   * Builds the responsive UI hierarchy and binds all button/slider events to `FoldTutorialManager`.
-  * Automatically populates all 26 step definitions and saves the scene.
+  * Automatically populates all 25 step definitions and saves the scene.
 * **`Tools -> Wire Tutorial Select Screen Buttons`**:
   * Opens `TutorialSelectScreen.unity`.
   * Finds the `FOLD FOR STORAGE` and `DEPLOY FOR FLIGHT` buttons (LeanButton).
@@ -202,7 +218,7 @@ An editor utility is located at `Assets/Screens/FoldForStorageScreen/Editor/Fold
 | File Path | Description |
 | :--- | :--- |
 | `Assets/Screens/FoldForStorageScreen/FoldForStorage.unity` | The main folding tutorial scene. |
-| `Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs` | Sequencer managing 26 steps, slider sync, and UI buttons. |
+| `Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs` | Sequencer managing 25 steps, slider sync, and UI buttons. |
 | `Assets/Screens/FoldForStorageScreen/Scripts/TutorialPlayer.cs` | Low-level clip player using Playables API for smooth scrubbing and looping. |
 | `Assets/Screens/FoldForStorageScreen/Scripts/TutorialGhostSkin.cs` | Assigns hologram materials across all rig and hand renderers. |
 | `Assets/Screens/FoldForStorageScreen/Editor/FoldSceneSetup.cs` | Editor automation script for scene generation and button wiring. |

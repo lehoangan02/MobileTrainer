@@ -79,8 +79,7 @@ public static class FoldSceneSetup
         // Configure TutorialGhostSkin on TutorialRigRoot
         TutorialGhostSkin ghostSkin = rigRootGo.GetComponent<TutorialGhostSkin>();
         if (ghostSkin == null) ghostSkin = rigRootGo.AddComponent<TutorialGhostSkin>();
-        ghostSkin.hologramMaterial = AssetDatabase.LoadAssetAtPath<Material>(GhostMatPath);
-        ghostSkin.highlightMaterial = AssetDatabase.LoadAssetAtPath<Material>(GhostRedMatPath);
+        ghostSkin.EnsurePresetMaterialsLoaded();
         ghostSkin.ghostRoots = new List<Transform>();
         string[] rootNames = { "Ghost_HandRight", "Ghost_HandLeft", "Ghost_Arm_BackRight", "Ghost_Drone", "Ghost_Battery_Upper" };
         foreach (var rName in rootNames)
@@ -90,6 +89,7 @@ public static class FoldSceneSetup
         }
         ghostSkin.applyOnAwake = true;
         ghostSkin.skipHands = false;
+        ghostSkin.ApplyThemePreset(ghostSkin.CurrentTheme);
         ghostSkin.ApplySkin();
 
         // 2. Camera and Lighting
@@ -170,6 +170,7 @@ public static class FoldSceneSetup
         EditorSceneManager.SaveOpenScenes();
         Debug.Log($"[FoldSceneSetup] Wired {wiredCount} buttons in TutorialSelectScreen and saved!");
     }
+
 
     private static ModelCameraController SetupCameraAndLighting(Transform rigRoot)
     {
@@ -297,20 +298,20 @@ public static class FoldSceneSetup
         UnityEventTools.AddPersistentListener(resetBtn.onClick, manager.ResetCameraOrientation);
 
         // Step Counter Text
-        TextMeshProUGUI stepCountText = CreateText("StepCounterText", topPanel.transform, "STEP 1 / 26", font, 20, TextAlignmentOptions.Center);
+        TextMeshProUGUI stepCountText = CreateText("StepCounterText", topPanel.transform, "STEP 1 / 25", font, 20, TextAlignmentOptions.Center);
         RectTransform scRt = stepCountText.GetComponent<RectTransform>();
         SetAnchor(scRt, 0.5f, 0.85f, 0.5f, 0.85f, Vector2.zero, new Vector2(400, 30));
         stepCountText.color = new Color(0.35f, 0.75f, 1f, 1f);
 
         // Title Text
-        TextMeshProUGUI titleText = CreateText("TitleText", topPanel.transform, "Release the battery", font, 28, TextAlignmentOptions.Center);
+        TextMeshProUGUI titleText = CreateText("TitleText", topPanel.transform, "Lift the battery off", font, 28, TextAlignmentOptions.Center);
         RectTransform tRt = titleText.GetComponent<RectTransform>();
         SetAnchor(tRt, 0.5f, 0.55f, 0.5f, 0.55f, Vector2.zero, new Vector2(1000, 42));
         titleText.fontStyle = FontStyles.Bold;
         titleText.color = Color.white;
 
         // Instruction Text
-        TextMeshProUGUI instText = CreateText("InstructionText", topPanel.transform, "Grab the battery handle and rotate it until the latch releases.", font, 19, TextAlignmentOptions.Center);
+        TextMeshProUGUI instText = CreateText("InstructionText", topPanel.transform, "Keep hold of the handle and lift the upper battery unit clear of the drone.", font, 19, TextAlignmentOptions.Center);
         RectTransform iRt = instText.GetComponent<RectTransform>();
         SetAnchor(iRt, 0.5f, 0.22f, 0.5f, 0.22f, Vector2.zero, new Vector2(1200, 36));
         instText.color = new Color(0.85f, 0.88f, 0.92f, 1f);
