@@ -86,13 +86,10 @@ public class TutorialGhostSkin : MonoBehaviour
     private void Awake()
     {
         EnsurePresetMaterialsLoaded();
-        if (currentTheme != SkinTheme.Custom && PlayerPrefs.HasKey("SelectedDroneTheme"))
-        {
-            currentTheme = (SkinTheme)Mathf.Clamp(PlayerPrefs.GetInt("SelectedDroneTheme"), 0, 2);
-        }
-
         if (currentTheme != SkinTheme.Custom)
         {
+            int savedTheme = PlayerPrefs.GetInt("SelectedDroneTheme", 0);
+            currentTheme = (SkinTheme)Mathf.Clamp(savedTheme, 0, 2);
             ApplyThemePreset(currentTheme);
         }
         ApplyCameraBackground(currentTheme);

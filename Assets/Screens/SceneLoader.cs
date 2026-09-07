@@ -27,6 +27,7 @@ public class SceneLoader : MonoBehaviour
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
+        ScreenOrientationManager.EnforceLandscapeOrientation();
     }
 
     private void Start()

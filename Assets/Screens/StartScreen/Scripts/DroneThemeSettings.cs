@@ -39,6 +39,12 @@ public class DroneThemeSettings : MonoBehaviour
 
     private void Awake()
     {
+        if (!PlayerPrefs.HasKey(PrefKey))
+        {
+            PlayerPrefs.SetInt(PrefKey, 0);
+            PlayerPrefs.Save();
+        }
+
         for (int i = 0; i < options.Length; i++)
         {
             int index = i;
@@ -47,6 +53,13 @@ public class DroneThemeSettings : MonoBehaviour
                 options[i].button.OnClick.AddListener(() => SelectTheme(index));
             }
         }
+    }
+
+    private void Start()
+    {
+        int savedTheme = PlayerPrefs.GetInt(PrefKey, 0);
+        savedTheme = Mathf.Clamp(savedTheme, 0, 2);
+        ApplySelectionVisuals(savedTheme);
     }
 
     private void OnEnable()

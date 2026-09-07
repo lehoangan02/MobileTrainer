@@ -33,6 +33,26 @@ public static class FoldThemeSwitcher
         ApplyThemeToFoldScene(TutorialGhostSkin.SkinTheme.CarbonFiber_CyanHighlight);
     }
 
+    [InitializeOnLoadMethod]
+    [MenuItem("Tools/Enforce Landscape Only (Horizontal)", priority = 100)]
+    public static void EnforceLandscapePlayerSettings()
+    {
+        PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+        PlayerSettings.allowedAutorotateToPortrait = false;
+        PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+        PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+        PlayerSettings.allowedAutorotateToLandscapeRight = true;
+
+        var ps = Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings");
+        if (ps != null)
+        {
+            EditorUtility.SetDirty(ps);
+        }
+        AssetDatabase.SaveAssets();
+        EditorApplication.ExecuteMenuItem("File/Save Project");
+        Debug.Log("<color=green><b>[FoldThemeSwitcher]</b></color> Configured PlayerSettings to Landscape only and saved project.");
+    }
+
     /// <summary>
     /// Loads the FoldForStorage scene if not active, applies the requested theme, and saves the scene.
     /// </summary>
