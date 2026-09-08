@@ -57,6 +57,7 @@ public class FoldTutorialManager : MonoBehaviour
 
     private int currentStepIndex = 0;
     private bool isScrubbing = false;
+    private bool wasPlayingBeforeScrub = false;
 
     public int CurrentStepIndex => currentStepIndex;
     public int StepCount => steps.Count;
@@ -85,7 +86,22 @@ public class FoldTutorialManager : MonoBehaviour
 
         if (timelineSlider != null)
         {
+            SetupSliderHitTarget(timelineSlider);
+
+            timelineSlider.onValueChanged.RemoveListener(OnSliderScrub);
             timelineSlider.onValueChanged.AddListener(OnSliderScrub);
+
+            var bridge = timelineSlider.GetComponent<SliderEventBridge>();
+            if (bridge == null)
+            {
+                bridge = timelineSlider.gameObject.AddComponent<SliderEventBridge>();
+            }
+            bridge.targetSlider = timelineSlider;
+            bridge.EnsureTouchHitArea();
+            bridge.OnPointerDownEvent -= HandleSliderPointerDown;
+            bridge.OnPointerDownEvent += HandleSliderPointerDown;
+            bridge.OnPointerUpEvent -= HandleSliderPointerUp;
+            bridge.OnPointerUpEvent += HandleSliderPointerUp;
         }
 
         if (steps.Count > 0)
@@ -123,8 +139,16 @@ public class FoldTutorialManager : MonoBehaviour
     {
         if (steps == null || steps.Count == 0) return;
 
+        isScrubbing = false;
+        wasPlayingBeforeScrub = false;
+
         currentStepIndex = Mathf.Clamp(index, 0, steps.Count - 1);
         Step s = steps[currentStepIndex];
+
+        if (timelineSlider != null)
+        {
+            timelineSlider.SetValueWithoutNotify(0f);
+        }
 
         if (titleText != null) titleText.text = s.title;
         if (instructionText != null) instructionText.text = s.instruction;
@@ -161,26 +185,66 @@ public class FoldTutorialManager : MonoBehaviour
     {
         if (player != null)
         {
-            player.TogglePlay();
+            if (isScrubbing)
+            {
+                wasPlayingBeforeScrub = !wasPlayingBeforeScrub;
+            }
+            else
+            {
+                player.TogglePlay();
+            }
         }
     }
 
     public void ReplayCurrentStep()
     {
+        isScrubbing = false;
+        wasPlayingBeforeScrub = false;
+        if (timelineSlider != null)
+        {
+            timelineSlider.SetValueWithoutNotify(0f);
+        }
         if (player != null)
         {
             player.Restart();
         }
     }
 
+    private void HandleSliderPointerDown(UnityEngine.EventSystems.PointerEventData eventData)
+    {
+        OnSliderPointerDown();
+    }
+
+    private void HandleSliderPointerUp(UnityEngine.EventSystems.PointerEventData eventData)
+    {
+        OnSliderPointerUp();
+    }
+
     public void OnSliderPointerDown()
     {
         isScrubbing = true;
+        if (player != null)
+        {
+            wasPlayingBeforeScrub = player.IsPlaying;
+            player.Pause();
+        }
     }
 
     public void OnSliderPointerUp()
     {
         isScrubbing = false;
+        if (player != null)
+        {
+            if (timelineSlider != null)
+            {
+                player.Scrub01(timelineSlider.value);
+            }
+
+            if (wasPlayingBeforeScrub)
+            {
+                player.Play();
+            }
+        }
     }
 
     public void OnSliderScrub(float value)
@@ -189,6 +253,27 @@ public class FoldTutorialManager : MonoBehaviour
         {
             player.Scrub01(value);
         }
+    }
+
+    private void SetupSliderHitTarget(Slider slider)
+    {
+        if (slider == null) return;
+        if (slider.transform.Find("TouchHitArea") != null) return;
+
+        GameObject hitGo = new GameObject("TouchHitArea", typeof(RectTransform));
+        hitGo.transform.SetParent(slider.transform, false);
+        hitGo.transform.SetAsFirstSibling();
+
+        RectTransform rt = hitGo.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0f, 0.5f);
+        rt.anchorMax = new Vector2(1f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = new Vector2(40f, 70f);
+
+        Image img = hitGo.AddComponent<Image>();
+        img.color = new Color(0f, 0f, 0f, 0f);
+        img.raycastTarget = true;
     }
 
     public void BackToTutorialSelect()

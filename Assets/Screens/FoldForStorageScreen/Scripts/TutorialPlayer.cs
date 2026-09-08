@@ -48,7 +48,7 @@ public class TutorialPlayer : MonoBehaviour
     public bool IsPlaying { get { return _playing; } }
     public bool Looping   { get { return loop; } }
     public AnimationClip CurrentClip { get { return _current; } }
-    public float Progress01 { get { return (_ready && _t1 > _t0) ? (float)((_playable.GetTime() - _t0) / (_t1 - _t0)) : 0f; } }
+    public float Progress01 => (_ready && _t1 > _t0) ? Mathf.Clamp01((float)((_playable.GetTime() - _t0) / (_t1 - _t0))) : 0f;
 
     System.Collections.IEnumerator Start()
     {
@@ -133,13 +133,69 @@ public class TutorialPlayer : MonoBehaviour
     }
 
     // ---- UI entry points ----
-    public void Play()       { if (!_ready) return; _playing = true;  _playable.SetSpeed(speed); }
-    public void Pause()      { if (!_ready) return; _playing = false; _playable.SetSpeed(0); }
+    public void Play()
+    {
+        if (!_ready || !_graph.IsValid()) return;
+        _playing = true;
+        _playable.SetSpeed(speed);
+        if (!_graph.IsPlaying())
+        {
+            _graph.Play();
+        }
+    }
+
+    public void Pause()
+    {
+        if (!_ready || !_graph.IsValid()) return;
+        _playing = false;
+        _playable.SetSpeed(0);
+        if (_graph.IsPlaying())
+        {
+            _graph.Stop();
+        }
+    }
+
     public void TogglePlay() { if (_playing) Pause(); else Play(); }
-    public void Restart()    { if (!_ready) return; _playable.SetTime(_t0); Play(); }
+
+    public void Restart()
+    {
+        if (!_ready) return;
+        _playable.SetTime(_t0);
+        if (!_playing && _graph.IsValid() && !_graph.IsPlaying())
+        {
+            _graph.Evaluate(0f);
+        }
+        Play();
+    }
+
     public void ToggleLoop() { loop = !loop; }
-    public void SetSpeed(float s) { speed = Mathf.Clamp(s, 0.1f, 2f); if (_playing) _playable.SetSpeed(speed); }
-    public void Scrub01(float f) { if (!_ready) return; _playable.SetTime(_t0 + Mathf.Clamp01(f) * (_t1 - _t0)); _graph.Evaluate(0f); }
+
+    public void SetSpeed(float s)
+    {
+        speed = Mathf.Clamp(s, 0.1f, 2f);
+        if (_playing && _ready) _playable.SetSpeed(speed);
+    }
+
+    public void Scrub01(float f)
+    {
+        if (!_ready || !_graph.IsValid()) return;
+        double targetTime = _t0 + (double)Mathf.Clamp01(f) * (_t1 - _t0);
+        _playable.SetTime(targetTime);
+
+        if (_graph.IsPlaying())
+        {
+            _graph.Stop();
+            _graph.Evaluate(0f);
+            if (_playing)
+            {
+                _graph.Play();
+            }
+        }
+        else
+        {
+            _graph.Evaluate(0f);
+        }
+    }
     /// HeadYaw only: recall the station to wherever the learner is standing now.
     public void ReplaceHere() { if (placement == PlacementMode.HeadYaw) PlaceAtHead(); }
 
