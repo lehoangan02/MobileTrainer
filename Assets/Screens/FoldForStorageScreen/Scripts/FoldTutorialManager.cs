@@ -20,6 +20,10 @@ public class FoldTutorialManager : MonoBehaviour
         public AnimationClip clip;
         [Tooltip("Transform/GameObject names in the rig to highlight with M_TutorialGhost_Red during this step.")]
         public string[] highlightPartNames;
+        [Tooltip("3D Camera Anchor in the scene. Drag and drop any GameObject here to position the camera directly in 3D space!")]
+        public Transform cameraAnchor;
+        [Tooltip("Custom camera pose for this step. If enabled, camera starts at this pose and resets to it.")]
+        public StepCameraPose cameraPose;
     }
 
     [Header("Player Reference")]
@@ -52,6 +56,11 @@ public class FoldTutorialManager : MonoBehaviour
     [Header("Camera Control")]
     [SerializeField] private ModelCameraController cameraController;
 
+    [Header("Scene Default Camera Pose")]
+    [Tooltip("Default camera starting pose for this entire scene. Fallback when a step does not have custom camera enabled.")]
+    [SerializeField] private StepCameraPose sceneDefaultPose;
+    [SerializeField] private float stepCameraTransitionDuration = 0.45f;
+
     [Header("Tutorial Sequence (26 Steps)")]
     [SerializeField] private List<Step> steps = new();
 
@@ -61,6 +70,9 @@ public class FoldTutorialManager : MonoBehaviour
 
     public int CurrentStepIndex => currentStepIndex;
     public int StepCount => steps.Count;
+    public List<Step> Steps => steps;
+    public StepCameraPose SceneDefaultPose { get => sceneDefaultPose; set => sceneDefaultPose = value; }
+    public ModelCameraController CameraController => cameraController;
 
     private void Start()
     {
@@ -77,6 +89,18 @@ public class FoldTutorialManager : MonoBehaviour
         if (cameraController == null)
         {
             cameraController = UnityEngine.Object.FindFirstObjectByType<ModelCameraController>();
+        }
+
+        if (cameraController != null)
+        {
+            if (sceneDefaultPose.enabled)
+            {
+                cameraController.SceneDefaultPose = sceneDefaultPose;
+            }
+            else if (cameraController.SceneDefaultPose.enabled)
+            {
+                sceneDefaultPose = cameraController.SceneDefaultPose;
+            }
         }
 
         if (ghostSkin == null)
@@ -106,7 +130,7 @@ public class FoldTutorialManager : MonoBehaviour
 
         if (steps.Count > 0)
         {
-            GoToStep(0);
+            GoToStep(0, false);
         }
 
         UpdateSpeedUI(true);
@@ -137,6 +161,11 @@ public class FoldTutorialManager : MonoBehaviour
 
     public void GoToStep(int index)
     {
+        GoToStep(index, true);
+    }
+
+    public void GoToStep(int index, bool animateCamera)
+    {
         if (steps == null || steps.Count == 0) return;
 
         isScrubbing = false;
@@ -163,6 +192,35 @@ public class FoldTutorialManager : MonoBehaviour
         }
 
         UpdateStepHighlight(s, currentStepIndex);
+        ApplyStepCamera(s, animateCamera);
+    }
+
+    public void ApplyStepCamera(Step s, bool animate)
+    {
+        if (cameraController == null)
+        {
+            cameraController = UnityEngine.Object.FindFirstObjectByType<ModelCameraController>();
+            if (cameraController == null) return;
+        }
+
+        StepCameraPose pose;
+        if (s != null && s.cameraAnchor != null)
+        {
+            Transform pivotTarget = cameraController.TargetPivotTransform;
+            Camera anchorCam = s.cameraAnchor.GetComponent<Camera>();
+            float fov = anchorCam != null ? anchorCam.fieldOfView : 55f;
+            pose = StepCameraPose.CreateFromTransform(s.cameraAnchor, pivotTarget, fov);
+        }
+        else if (s != null && s.cameraPose.enabled)
+        {
+            pose = s.cameraPose;
+        }
+        else
+        {
+            pose = sceneDefaultPose;
+        }
+
+        cameraController.SetActivePose(pose, animate, stepCameraTransitionDuration);
     }
 
     public void NextStep()
@@ -558,6 +616,49 @@ public class FoldTutorialManager : MonoBehaviour
 
         EditorUtility.SetDirty(this);
         Debug.Log($"[FoldTutorialManager] Populated {steps.Count} default fold steps with active part highlight targets.");
+    }
+
+    [ContextMenu("Capture Scene View to Current Step Camera")]
+    public void CaptureSceneViewToCurrentStep()
+    {
+        if (steps == null || currentStepIndex < 0 || currentStepIndex >= steps.Count) return;
+        Undo.RecordObject(this, "Capture Step Camera Pose");
+        Transform targetPivot = cameraController != null ? cameraController.TargetPivotTransform : null;
+        steps[currentStepIndex].cameraPose = StepCameraPose.CreateFromSceneView(targetPivot);
+        steps[currentStepIndex].cameraPose.enabled = true;
+        EditorUtility.SetDirty(this);
+        Debug.Log($"[FoldTutorialManager] Captured Step {currentStepIndex + 1} ('{steps[currentStepIndex].title}') camera from SceneView: {steps[currentStepIndex].cameraPose.SummaryText}");
+    }
+
+    [ContextMenu("Capture Scene View to Scene Default")]
+    public void CaptureSceneViewToSceneDefault()
+    {
+        Undo.RecordObject(this, "Capture Scene Default Camera");
+        Transform targetPivot = cameraController != null ? cameraController.TargetPivotTransform : null;
+        sceneDefaultPose = StepCameraPose.CreateFromSceneView(targetPivot);
+        sceneDefaultPose.enabled = true;
+        if (cameraController != null)
+        {
+            cameraController.SceneDefaultPose = sceneDefaultPose;
+            EditorUtility.SetDirty(cameraController);
+        }
+        EditorUtility.SetDirty(this);
+        Debug.Log($"[FoldTutorialManager] Captured Scene Default Camera from SceneView: {sceneDefaultPose.SummaryText}");
+    }
+
+    [ContextMenu("Preview Current Step Camera")]
+    public void PreviewCurrentStepCamera()
+    {
+        if (steps == null || currentStepIndex < 0 || currentStepIndex >= steps.Count) return;
+        var step = steps[currentStepIndex];
+        if (step.cameraPose.enabled)
+        {
+            step.cameraPose.ApplyPreviewInEditor();
+        }
+        else if (sceneDefaultPose.enabled)
+        {
+            sceneDefaultPose.ApplyPreviewInEditor();
+        }
     }
 #endif
 }

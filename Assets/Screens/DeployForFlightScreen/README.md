@@ -170,3 +170,25 @@ Located at `Assets/Screens/DeployForFlightScreen/Editor/DeploySceneSetup.cs`.
 | `Assets/Screens/DeployForFlightScreen/Anim/TutorialRigRoot.controller` | Animator controller binding clips to the rig. |
 | `Assets/Screens/DeployForFlightScreen/README.md` | Full technical documentation. |
 | `ProjectSettings/EditorBuildSettings.asset` | Build settings registering `DeployForFlight.unity` in build index. |
+
+---
+
+## 8. Per-Step & Scene-Default Camera Positioning System
+
+Both the **Deploy For Flight** and **Fold For Storage** screens utilize the shared `StepCameraPose` and `ModelCameraController` architecture to manage custom starting camera positions for every step.
+
+### 8.1. Operational Rules
+1. **Step Navigation**:
+   * Navigating to any step (`GoToStep`, `NextStep`, `PreviousStep`) smoothly transitions the camera to that step's custom starting pose (`StepCameraPose`) over 0.45s with easing.
+   * If the step has `enabled = false` for custom camera pose, the camera uses `sceneDefaultPose`.
+2. **Instant Starting Frame**:
+   * When `DeployForFlight.unity` loads at `Step 0`, the camera is positioned immediately at the starting pose without any delay or interpolation lag.
+3. **Reset Button Operation**:
+   * Pressing the **RESET** button (located in the top-right header) smoothly animates the camera back to the starting camera pose of the **currently active step**.
+   * Touching or dragging the screen at any time interrupts the animation instantly to allow uninterrupted manual 3D orbit and zoom.
+
+### 8.2. Easy Editor Configuration
+* **Step Camera Setup Assistant**: Highlight `TutorialController` in the scene. Use the top toolbar on `DeployTutorialManager` to scrub through steps and click **`[📸 Capture SceneView to Step X]`** or **`[👁️ Preview Step Camera]`**.
+* **Inline Step Controls**: In the `steps` list, toggle **`Use Custom Camera Position`** to view individual step parameters and click **`[Capture View]`** / **`[Preview]`**.
+* **Auto-Generation**: Run `Tools > Mobile Trainer > Generate Smart Step Cameras for Both Scenes` to automatically orient the camera to all 27 mechanical components across the deployment workflow.
+

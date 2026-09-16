@@ -345,4 +345,43 @@ During mobile testing, two critical issues affected the timeline slider (`Timeli
   * Maps touch position 1:1 with handle knob travel limits, ensuring the handle knob instantly snaps directly under the user's finger.
   * Includes robust camera resolution supporting Screen Space Overlay, Screen Space Camera, and World Space canvases.
 
+---
+
+## 11. Per-Step & Scene-Default Camera Positioning System
+
+To ensure optimal viewing angles for every mechanical sub-assembly across the tutorial, the system features a dedicated **Per-Step Camera Positioning and Reset Framework** (`StepCameraPose.cs`, `ModelCameraController.cs`, `TutorialStepCameraEditor.cs`).
+
+### 11.1. Core Behavior
+* **Per-Step Starting Camera Position**:
+  * Each step in `steps` can store its own customized camera pose (`StepCameraPose`).
+  * When navigating between steps (`GoToStep`, `NextStep`, `PreviousStep`), the camera smoothly glides to that step's custom starting pose over 0.45s using ease-in-out interpolation.
+  * On initial scene load (`Step 0`), the camera initializes immediately at that pose without any jarring animation.
+* **Scene Default Camera Position**:
+  * If a step does not have a custom camera pose enabled, the camera automatically uses the `sceneDefaultPose`.
+  * The scene default pose can also be captured or customized in 1 click in the editor.
+* **Interactive Reset Button**:
+  * When the user touches, rotates, pans, or zooms the camera to inspect the model and then presses the **RESET** button (top header bar), the camera smoothly animates back to the starting camera position of the **currently active step** (or the scene default).
+  * If the user touches or drags the screen during any camera animation, input immediately interrupts the animation for zero-lag manual control.
+
+### 11.2. How to Set Camera Positions Easily in the Editor
+Three effortless workflows are supported:
+
+1. **Step Camera Setup Assistant Toolbar (Inspector Top Bar)**:
+   * Select `TutorialController` in the hierarchy. At the top of `FoldTutorialManager`, the **Step Camera Setup Assistant** box provides:
+     * Step scrubber and `[◄ Prev]` / `[Next ►]` buttons.
+     * **`[📸 Capture SceneView to Step X]`**: Instantly captures the orientation, framing, pivot, and distance of your current SceneView camera into the step.
+     * **`[👁️ Preview Step Camera]`**: Aligns both the SceneView and Main Camera in the scene to that step's exact pose.
+     * **`[🎯 Frame Step Target in View]`**: Automatically frames the mechanical part highlighted in that step in the SceneView.
+     * **`[Capture SceneView as Default]`**: Sets the scene-wide default camera pose.
+2. **Inline Step Property Drawer (Steps List)**:
+   * Inside the `steps` list in the Inspector, each step includes a **`Use Custom Camera Position`** toggle:
+     * Click **`[Capture View]`** to capture from SceneView.
+     * Click **`[Capture Cam]`** to capture from Main Camera.
+     * Click **`[Preview]`** to see the framing.
+     * Click **`[Clear]`** to revert to the scene default.
+3. **Unity Menu Bar / Batch Operations**:
+   * `Tools > Mobile Trainer > Generate Smart Step Cameras for Both Scenes`: Automatically analyzes the highlighted parts in both scenes and generates framing poses for all steps.
+   * `Tools > Mobile Trainer > Generate Smart Step Cameras for Active Scene`.
+
+
 

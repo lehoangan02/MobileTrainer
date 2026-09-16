@@ -186,6 +186,8 @@ public static class DeploySceneSetup
             camSo.FindProperty("targetPivotTransform").objectReferenceValue = rigRoot;
             camSo.ApplyModifiedProperties();
         }
+        StepCameraPose defaultPose = StepCameraPose.CreateFromCamera(cam, rigRoot);
+        camCtrl.SceneDefaultPose = defaultPose;
 
         Light[] lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
         foreach (var l in lights)
@@ -237,6 +239,10 @@ public static class DeploySceneSetup
         so.FindProperty("cameraController").objectReferenceValue = camCtrl;
         so.FindProperty("ghostSkin").objectReferenceValue = ghostSkin;
         so.FindProperty("selectScreenSceneName").stringValue = "TutorialSelectScreen";
+        if (camCtrl != null && camCtrl.SceneDefaultPose.enabled)
+        {
+            TutorialStepCameraEditorHelper.ApplyPoseToSerializedProperty(so.FindProperty("sceneDefaultPose"), camCtrl.SceneDefaultPose);
+        }
         so.ApplyModifiedProperties();
 
         return manager;
