@@ -3412,8 +3412,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 358771767}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.325185, y: 0.4031764, z: -0.15588051, w: 0.84107363}
-  m_LocalPosition: {x: -0.026690185, y: 1.1176128, z: -0.41498846}
+  m_LocalRotation: {x: 0.25618812, y: 0.6447505, z: -0.243738, w: 0.6776846}
+  m_LocalPosition: {x: -0.09856427, y: 1.0000521, z: -0.11085144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5990,8 +5990,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 660323387}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.082928, y: 0.6054266, z: -0.0636329, w: 0.78900725}
-  m_LocalPosition: {x: -1.2151544, y: -0.09496778, z: -0.48100993}
+  m_LocalRotation: {x: 0.06083563, y: -0.9138308, z: 0.14912848, w: 0.3727909}
+  m_LocalPosition: {x: 1.0600383, y: 0.8803817, z: 0.65783364}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6013,7 +6013,7 @@ MonoBehaviour:
   stepTitle: Fold the other landing gear
   lookAtTarget: {fileID: 871048047}
   autoLookAtTarget: 0
-  fieldOfView: 55
+  fieldOfView: 60.000004
   gizmoColor: {r: 0.2, g: 0.85, b: 0.4, a: 0.9}
   frustumLength: 1.2
   previewCamera: {fileID: 0}
@@ -17025,8 +17025,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1559567309}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.325185, y: 0.4031764, z: -0.15588051, w: 0.84107363}
-  m_LocalPosition: {x: -0.026690185, y: 1.1176128, z: -0.41498846}
+  m_LocalRotation: {x: 0.25618812, y: 0.6447505, z: -0.243738, w: 0.6776846}
+  m_LocalPosition: {x: -0.09856427, y: 1.0000521, z: -0.11085144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17048,7 +17048,7 @@ MonoBehaviour:
   stepTitle: Open the back-left latch
   lookAtTarget: {fileID: 871048047}
   autoLookAtTarget: 0
-  fieldOfView: 55
+  fieldOfView: 60.000004
   gizmoColor: {r: 0.2, g: 0.85, b: 0.4, a: 0.9}
   frustumLength: 1.2
   previewCamera: {fileID: 0}
@@ -18071,8 +18071,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1633009048}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000010574742, y: 0.9702957, z: -0.2419219, w: -0.000000042412974}
-  m_LocalPosition: {x: 0.38000014, y: 0.6958903, z: 1.6041898}
+  m_LocalRotation: {x: 0.1163108, y: -0.80137897, z: 0.16559061, w: 0.56288844}
+  m_LocalPosition: {x: 1.4438102, y: 1.0800493, z: 0.24582627}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18094,7 +18094,7 @@ MonoBehaviour:
   stepTitle: Fold the back arms
   lookAtTarget: {fileID: 871048047}
   autoLookAtTarget: 0
-  fieldOfView: 55
+  fieldOfView: 60.000004
   gizmoColor: {r: 0.2, g: 0.85, b: 0.4, a: 0.9}
   frustumLength: 1.2
   previewCamera: {fileID: 0}
@@ -18687,8 +18687,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1732625277}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.082928, y: -0.6054266, z: 0.0636329, w: 0.78900725}
-  m_LocalPosition: {x: 1.9751543, y: -0.09496778, z: -0.48100993}
+  m_LocalRotation: {x: 0.12385246, y: 0.5631119, z: -0.08583416, w: 0.81252575}
+  m_LocalPosition: {x: -1.8421601, y: 0.89605784, z: -0.96313393}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19812,8 +19812,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1872936860}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.325185, y: 0.4031764, z: -0.15588051, w: 0.84107363}
-  m_LocalPosition: {x: -0.026690185, y: 1.1176128, z: -0.41498846}
+  m_LocalRotation: {x: 0.25618812, y: 0.6447505, z: -0.243738, w: 0.6776846}
+  m_LocalPosition: {x: -0.09856427, y: 1.0000521, z: -0.11085144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
