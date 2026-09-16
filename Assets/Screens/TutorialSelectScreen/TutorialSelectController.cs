@@ -85,13 +85,17 @@ public class TutorialSelectController : MonoBehaviour
     public void OpenDeployForFlight()
     {
         Debug.Log("[TutorialSelectController] OpenDeployForFlight invoked.");
-        if (Application.CanStreamedLevelBeLoaded("DeployForFlightScreen"))
+        if (Application.CanStreamedLevelBeLoaded("DeployForFlight"))
+        {
+            Load("DeployForFlight");
+        }
+        else if (Application.CanStreamedLevelBeLoaded("DeployForFlightScreen"))
         {
             Load("DeployForFlightScreen");
         }
         else
         {
-            Debug.LogWarning("[TutorialSelectController] DeployForFlightScreen scene is not yet added to Build Settings or not implemented.");
+            Debug.LogWarning("[TutorialSelectController] DeployForFlight scene is not yet added to Build Settings or not implemented.");
         }
     }
 

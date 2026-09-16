@@ -65,6 +65,7 @@ In the scene [`FoldForStorage.unity`](file:///Volumes/Baracuda/Unity/MobileTrain
 | [`FoldTutorialManager.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs) | **`TutorialController`** | Root level | High-level sequencer managing 25 steps, UI text updates, slider scrubbing, and Next/Prev/Back button events. |
 | [`TutorialPlayer.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialPlayer.cs) | **`TutorialRigRoot`** | Root level | Low-level playback engine using Unity's Playables API to directly drive the `Animator` component with step clips. |
 | [`TutorialGhostSkin.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/TutorialGhostSkin.cs) | **`TutorialRigRoot`** | Root level | Traverses all 5 child ghost branches under `TutorialRigRoot` on `Awake()` and applies `M_TutorialGhost.mat` to all renderers. |
+| [`SliderEventBridge.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Scripts/SliderEventBridge.cs) | **`TimelineSlider`** | `Canvas/BottomControlsPanel` | Intercepts pointer events, manages 70px touch hit target, and drives instant jump-to-point and drag scrubbing. |
 
 ---
 
@@ -221,6 +222,7 @@ An editor utility is located at `Assets/Screens/FoldForStorageScreen/Editor/Fold
 | `Assets/Screens/FoldForStorageScreen/Scripts/FoldTutorialManager.cs` | Sequencer managing 25 steps, slider sync, and UI buttons. |
 | `Assets/Screens/FoldForStorageScreen/Scripts/TutorialPlayer.cs` | Low-level clip player using Playables API for smooth scrubbing and looping. |
 | `Assets/Screens/FoldForStorageScreen/Scripts/TutorialGhostSkin.cs` | Assigns hologram materials across all rig and hand renderers. |
+| `Assets/Screens/FoldForStorageScreen/Scripts/SliderEventBridge.cs` | Bridges slider pointer events, provisions invisible 70px hit target, and handles instant jumps. |
 | `Assets/Screens/FoldForStorageScreen/Editor/FoldSceneSetup.cs` | Editor automation script for scene generation and button wiring. |
 | `Assets/Screens/FoldForStorageScreen/Anim/*.anim` | 25 sliced animation clips corresponding to each folding step. |
 | `Assets/Screens/FoldForStorageScreen/Anim/TutorialRigRoot.controller` | Animator controller binding clips to the rig. |
@@ -277,4 +279,70 @@ Following the asset relocation, code path constants in editor tooling were updat
 * **[`FoldSceneSetup.cs`](file:///Volumes/Baracuda/Unity/MobileTrainer/Assets/Screens/FoldForStorageScreen/Editor/FoldSceneSetup.cs#L20)**:
   * **Before**: `private const string GhostMatPath = "Assets/Materials/M_TutorialGhost.mat";`
   * **After**: `private const string GhostMatPath = "Assets/Screens/FoldForStorageScreen/Materials/M_TutorialGhost.mat";`
+
+---
+
+## 10. Timeline Scrubbing & Touch Jump Diagnostics & Solutions
+
+During mobile testing, two critical issues affected the timeline slider (`TimelineSlider`):
+
+1. **Scrub Stutter & PlayableGraph Evaluation Conflict**:
+   * Dragging the slider handle felt unresponsive, jittery, or froze video playback entirely.
+2. **Missed Touch Jumps along Track**:
+   * Tapping along the slider to jump to specific timestamps frequently missed touches, with only ~10-20% of taps registering.
+
+### 10.1. Issue 1: Timeline Slider Drag Conflicts & PlayableGraph Crash
+
+#### Root Cause:
+* **Frame-by-Frame Update Fighting User Input**: In `FoldTutorialManager.cs`, `Update()` unconditionally executed `timelineSlider.SetValueWithoutNotify(player.Progress01)` every frame. When the user attempted to drag or scrub, `Update()` immediately overwrote the slider handle position back to the playing clip timestamp, causing the slider to fight the user's touch.
+* **PlayableGraph Evaluation Exception**: Calling `_graph.Evaluate(0f)` in `TutorialPlayer.Scrub01()` while the graph was playing in `DirectorUpdateMode.GameTime` threw:
+  ```text
+  InvalidOperationException: PlayableGraph.Evaluate is not allowed when the graph is playing.
+  ```
+  This unhandled exception broke the scrub event pipeline, preventing further scrubbing updates.
+
+#### Solution:
+* **State-Aware Scrubbing Lifecycle (`FoldTutorialManager.cs`)**:
+  * Added `isScrubbing` and `wasPlayingBeforeScrub` tracking flags.
+  * In `Update()`, slider position is only synchronized from playback when `!isScrubbing`.
+  * On `OnSliderPointerDown()`, `wasPlayingBeforeScrub` records whether the clip was actively playing, and `player.Pause()` is called.
+  * On `OnSliderPointerUp()`, `isScrubbing` is cleared, the final scrub position is flushed to `player.Scrub01()`, and playback automatically resumes if and only if it was playing beforehand (`if (wasPlayingBeforeScrub) player.Play()`).
+* **Exception-Free Scrubbing (`TutorialPlayer.cs`)**:
+  * Updated `Scrub01(float f)` to check `_graph.IsPlaying()`. If playing, it stops the graph before evaluating `_graph.Evaluate(0f)`, and only resumes if `_playing` remains true.
+  * Ensures safe frame evaluation without throwing `InvalidOperationException`.
+
+---
+
+### 10.2. Issue 2: Missed Taps & Jumping Touches Along the Slider Track
+
+#### Root Cause:
+* **Microscopic 15-Pixel Hit Target**:
+  * In `FoldForStorage.unity`, the `TimelineSlider` GameObject has a RectTransform size of `1400 x 30` but possesses **no `Graphic` / `Image` component** on its root.
+  * The only raycast targets along the track were the `Background` and `Fill` child images, which have vertical anchors `anchorMin.y = 0.25` and `anchorMax.y = 0.75` inside the 30px container—yielding an active clickable strip **only 15 pixels tall** ($Y = -7.5$ to $+7.5$).
+  * On a 1080p mobile screen (`1920 x 1080`), a 15-pixel strip is **under 1 millimeter tall**.
+  * A human fingertip touch contacts approximately 7–10 mm (~40–60 screen pixels). Any tap landing more than 7.5 pixels off the center line missed the slider track completely.
+* **Touch Absorption by Background Panel**:
+  * The slider resides inside `BottomControlsPanel`. `BottomControlsPanel` has an opaque image with `raycastTarget = true` and no slider event handlers.
+  * When a touch missed the 15px strip, the raycast fell through to `BottomControlsPanel`, which swallowed the event without passing it to `TimelineSlider`, silently dropping the jump touch.
+* **Dragging vs. Jumping Asymmetry**:
+  * Dragging succeeded because users typically touched the 28x28 handle knob first. Once touched, Unity's EventSystem locked `eventData.pointerDrag` to `TimelineSlider`, maintaining tracking even if the finger drifted vertically. Jumping required hitting the invisible 15px strip directly, causing frequent missed touches.
+
+#### Solution:
+* **Dedicated Slider Event Bridge (`SliderEventBridge.cs`)**:
+  * Attached directly to `TimelineSlider`. Implements `IPointerDownHandler`, `IPointerUpHandler`, `IDragHandler`, and `IPointerClickHandler`.
+  * Integrates with `FoldTutorialManager` to coordinate scrub start, progress updates, and release states.
+* **Runtime Non-Destructive Touch Hit Target (`TouchHitArea`)**:
+  * Automatically provisions an invisible child GameObject (`TouchHitArea`) under `timelineSlider` at runtime on `Awake()` / `Start()`:
+    * **RectTransform**: `anchorMin = (0f, 0.5f)`, `anchorMax = (1f, 0.5f)`, `pivot = (0.5f, 0.5f)`, `anchoredPosition = Vector2.zero`.
+    * **Size**: `sizeDelta = (40f, 70f)` (height 70px, plus 20px horizontal margin at each end).
+    * **Graphic**: `Image` with `color = new Color(0, 0, 0, 0)` (100% transparent) and `raycastTarget = true`.
+    * **Hierarchy**: Placed as the first sibling (`SetAsFirstSibling()`) behind the visible 15px bar and handle knob.
+  * Increases the touch hit target height from **15 pixels to 70 pixels (over 4.6x larger)**.
+  * Completely non-destructive: **0 changes to `FoldForStorage.unity` scene assets**, and **0 changes to visual appearance or styling**.
+* **Instant Exact Coordinate Jump**:
+  * `JumpToPoint(PointerEventData eventData)` projects the screen touch point into the local coordinates of the handle container (`Handle Slide Area`):
+    $$\text{normalized} = \text{clamp01}\left(\frac{\text{localPoint.x} - \text{container.rect.xMin}}{\text{container.rect.width}}\right)$$
+  * Maps touch position 1:1 with handle knob travel limits, ensuring the handle knob instantly snaps directly under the user's finger.
+  * Includes robust camera resolution supporting Screen Space Overlay, Screen Space Camera, and World Space canvases.
+
 
