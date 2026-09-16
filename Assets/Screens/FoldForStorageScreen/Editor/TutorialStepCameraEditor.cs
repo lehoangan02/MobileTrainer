@@ -668,7 +668,6 @@ public static class TutorialStepCameraEditorHelper
             anchorComp.stepIndex = i;
             anchorComp.stepTitle = stepTitle;
             anchorComp.lookAtTarget = targetPivot;
-            anchorComp.EnsurePreviewCamera();
 
             StepCameraPose pose = ExtractPoseFromProperty(poseProp);
             if (!pose.enabled || pose.distance <= 0.05f)
@@ -737,7 +736,6 @@ public static class TutorialStepCameraEditorHelper
         anchor.stepIndex = stepIndex;
         anchor.stepTitle = stepTitle;
         anchor.lookAtTarget = targetPivot;
-        anchor.EnsurePreviewCamera();
 
         StepCameraPose pose = ExtractPoseFromProperty(poseProp);
         if (!pose.enabled || pose.distance <= 0.05f)
@@ -818,66 +816,6 @@ public static class TutorialStepCameraEditorHelper
 
         // Draw camera frustum wireframe
         DrawFrustumWire(currentPos, currentRot, 55f, 1.2f, new Color(0.2f, 0.85f, 1f, 0.8f));
-
-        // Floating Scene View HUD Panel
-        Handles.BeginGUI();
-        GUILayout.BeginArea(new Rect(12, 12, 330, 95), EditorStyles.helpBox);
-        EditorGUILayout.LabelField($"🎥 Step Camera 3D Editor (Step {index + 1}/{stepsProp.arraySize})", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField($"\"{stepTitle}\"", EditorStyles.miniLabel);
-
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            if (GUILayout.Button("◄ Prev", GUILayout.Width(55), GUILayout.Height(24)))
-            {
-                selectedStepIndex = Mathf.Max(0, index - 1);
-                SceneView.RepaintAll();
-            }
-            if (GUILayout.Button("Next ►", GUILayout.Width(55), GUILayout.Height(24)))
-            {
-                selectedStepIndex = Mathf.Min(stepsProp.arraySize - 1, index + 1);
-                SceneView.RepaintAll();
-            }
-
-            if (anchor != null)
-            {
-                if (GUILayout.Button("Select Anchor", GUILayout.Height(24)))
-                {
-                    Selection.activeGameObject = anchor.gameObject;
-                }
-            }
-            else
-            {
-                if (GUILayout.Button("+ 3D Anchor", GUILayout.Height(24)))
-                {
-                    var player = UnityEngine.Object.FindFirstObjectByType<TutorialPlayer>();
-                    var camCtrl = UnityEngine.Object.FindFirstObjectByType<ModelCameraController>();
-                    CreateSingleAnchorForStep(so, stepsProp, index, player != null ? player.rigRoot : null, camCtrl);
-                }
-            }
-
-            if (GUILayout.Button("Snap View", GUILayout.Height(24)))
-            {
-                var sv = SceneView.lastActiveSceneView;
-                if (sv != null)
-                {
-                    if (anchor != null)
-                    {
-                        Undo.RecordObject(anchor, "Snap Anchor to View");
-                        anchor.position = sv.camera.transform.position;
-                        anchor.rotation = sv.camera.transform.rotation;
-                    }
-                    else
-                    {
-                        Undo.RecordObject(so.targetObject, "Snap Step Camera to View");
-                        StepCameraPose p = StepCameraPose.CreateFromSceneView();
-                        ApplyPoseToSerializedProperty(poseProp, p);
-                        so.ApplyModifiedProperties();
-                    }
-                }
-            }
-        }
-        GUILayout.EndArea();
-        Handles.EndGUI();
     }
 
     public static void DrawFrustumWire(Vector3 pos, Quaternion rot, float fov, float length, Color color)

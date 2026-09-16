@@ -40,21 +40,8 @@ public class StepCameraAnchor : MonoBehaviour
 
     public Camera PreviewCamera => previewCamera;
 
-    private void Awake()
-    {
-        EnsurePreviewCamera();
-    }
-
-    private void OnValidate()
-    {
-        EnsurePreviewCamera();
-    }
-
-    /// <summary>
-    /// Ensures a disabled Camera component exists on this GameObject.
-    /// This causes Unity's Scene View to automatically pop up its native Camera Preview overlay
-    /// whenever this GameObject is selected in the Editor.
-    /// </summary>
+    // Preview camera is attached dynamically in edit mode ONLY when this anchor is selected.
+    // This prevents 25+ camera icons from cluttering the scene.
     public void EnsurePreviewCamera()
     {
         if (previewCamera == null)
@@ -64,6 +51,7 @@ public class StepCameraAnchor : MonoBehaviour
         if (previewCamera == null)
         {
             previewCamera = gameObject.AddComponent<Camera>();
+            previewCamera.hideFlags = HideFlags.DontSave;
         }
 
         // Always keep disabled at runtime so it never renders as an extra camera in-game
@@ -71,6 +59,21 @@ public class StepCameraAnchor : MonoBehaviour
         previewCamera.fieldOfView = fieldOfView;
         previewCamera.nearClipPlane = 0.05f;
         previewCamera.farClipPlane = 100f;
+    }
+
+    public void RemovePreviewCamera()
+    {
+        var cam = GetComponent<Camera>();
+        if (cam != null)
+        {
+            var urpData = GetComponent("UniversalAdditionalCameraData");
+            if (urpData != null)
+            {
+                DestroyImmediate(urpData);
+            }
+            DestroyImmediate(cam);
+        }
+        previewCamera = null;
     }
 
     private void Update()
@@ -136,11 +139,7 @@ public class StepCameraAnchor : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        DrawGizmoInternal(false);
-    }
-
+    // Gizmo is ONLY drawn for the currently selected anchor (prevents cluttering the scene with 25+ gizmos)
     private void OnDrawGizmosSelected()
     {
         DrawGizmoInternal(true);
