@@ -42,6 +42,18 @@ public class FoldTutorialManager : MonoBehaviour
     [SerializeField] private Selectable nextButton;
     [SerializeField] private Selectable prevButton;
 
+    [Header("UI Visibility Toggle")]
+    [Tooltip("Panel containing Back, Reset, Title, and Instruction texts.")]
+    [SerializeField] private GameObject topHeaderPanel;
+    [Tooltip("Panel containing Timeline Slider, Play/Pause, and Speed buttons.")]
+    [SerializeField] private GameObject bottomControlsPanel;
+    [Tooltip("Toggle button positioned on the middle-right screen edge to show/hide UI.")]
+    [SerializeField] private Lean.Gui.LeanButton toggleUiLeanButton;
+    [SerializeField] private Button toggleUiButton;
+    [SerializeField] private Text toggleUiButtonLegacyText;
+    [SerializeField] private TextMeshProUGUI toggleUiButtonText;
+    [SerializeField] private bool isUiVisible = true;
+
     [Header("Playback Speed UI")]
     [SerializeField] private float[] speedSteps = new float[] { 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f };
     [SerializeField] private TextMeshProUGUI speedText;
@@ -128,6 +140,43 @@ public class FoldTutorialManager : MonoBehaviour
             bridge.OnPointerUpEvent += HandleSliderPointerUp;
         }
 
+        EnsureUiReferences();
+        if (toggleUiLeanButton != null)
+        {
+            bool hasPersistent = false;
+            for (int i = 0; i < toggleUiLeanButton.OnClick.GetPersistentEventCount(); i++)
+            {
+                if (toggleUiLeanButton.OnClick.GetPersistentMethodName(i) == nameof(ToggleUiVisibility))
+                {
+                    hasPersistent = true;
+                    break;
+                }
+            }
+            if (!hasPersistent)
+            {
+                toggleUiLeanButton.OnClick.RemoveListener(ToggleUiVisibility);
+                toggleUiLeanButton.OnClick.AddListener(ToggleUiVisibility);
+            }
+        }
+        if (toggleUiButton != null)
+        {
+            bool hasPersistent = false;
+            for (int i = 0; i < toggleUiButton.onClick.GetPersistentEventCount(); i++)
+            {
+                if (toggleUiButton.onClick.GetPersistentMethodName(i) == nameof(ToggleUiVisibility))
+                {
+                    hasPersistent = true;
+                    break;
+                }
+            }
+            if (!hasPersistent)
+            {
+                toggleUiButton.onClick.RemoveListener(ToggleUiVisibility);
+                toggleUiButton.onClick.AddListener(ToggleUiVisibility);
+            }
+        }
+        UpdateToggleUiButtonText();
+
         if (steps.Count > 0)
         {
             GoToStep(0, false);
@@ -139,6 +188,13 @@ public class FoldTutorialManager : MonoBehaviour
     private void Update()
     {
         if (player == null) return;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.hKey.wasPressedThisFrame)
+        {
+            ToggleUiVisibility();
+        }
+#endif
 
         // Update scrubber if user is not actively dragging it
         if (timelineSlider != null && !isScrubbing)
@@ -372,6 +428,102 @@ public class FoldTutorialManager : MonoBehaviour
             {
                 cam.ResetOrientation();
             }
+        }
+    }
+
+    // ---- UI Visibility Toggle ----
+
+    public bool IsUiVisible => isUiVisible;
+    public Lean.Gui.LeanButton ToggleUiLeanButton => toggleUiLeanButton;
+    public Button ToggleUiButton => toggleUiButton;
+
+    /// <summary>
+    /// Toggles the visibility of the UI panels (top header and bottom controls)
+    /// to provide full screen estate for 3D drone inspection.
+    /// </summary>
+    public void ToggleUiVisibility()
+    {
+        SetUiVisible(!isUiVisible);
+    }
+
+    /// <summary>
+    /// Explicitly sets the UI panels visible or hidden.
+    /// </summary>
+    public void SetUiVisible(bool visible)
+    {
+        EnsureUiReferences();
+        isUiVisible = visible;
+
+        if (topHeaderPanel != null)
+        {
+            topHeaderPanel.SetActive(visible);
+        }
+
+        if (bottomControlsPanel != null)
+        {
+            bottomControlsPanel.SetActive(visible);
+        }
+
+        UpdateToggleUiButtonText();
+    }
+
+    private void UpdateToggleUiButtonText()
+    {
+        string label = isUiVisible ? "HIDE UI" : "SHOW UI";
+        if (toggleUiButtonLegacyText != null)
+        {
+            toggleUiButtonLegacyText.text = label;
+        }
+        if (toggleUiButtonText != null)
+        {
+            toggleUiButtonText.text = label;
+        }
+    }
+
+    private void EnsureUiReferences()
+    {
+        if (topHeaderPanel == null || bottomControlsPanel == null || (toggleUiLeanButton == null && toggleUiButton == null))
+        {
+            Canvas[] canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            foreach (var canvas in canvases)
+            {
+                if (topHeaderPanel == null)
+                {
+                    Transform t = canvas.transform.Find("TopHeaderPanel");
+                    if (t != null) topHeaderPanel = t.gameObject;
+                }
+                if (bottomControlsPanel == null)
+                {
+                    Transform b = canvas.transform.Find("BottomControlsPanel");
+                    if (b != null) bottomControlsPanel = b.gameObject;
+                }
+                if (toggleUiLeanButton == null && toggleUiButton == null)
+                {
+                    Transform btn = canvas.transform.Find("Toggle UI Button (LeanButton)");
+                    if (btn == null) btn = canvas.transform.Find("ToggleUiButton");
+                    if (btn != null)
+                    {
+                        toggleUiLeanButton = btn.GetComponent<Lean.Gui.LeanButton>();
+                        if (toggleUiLeanButton == null)
+                        {
+                            toggleUiButton = btn.GetComponent<Button>();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (toggleUiButtonLegacyText == null && toggleUiLeanButton != null)
+        {
+            toggleUiButtonLegacyText = toggleUiLeanButton.GetComponentInChildren<Text>();
+        }
+        if (toggleUiButtonText == null && toggleUiLeanButton != null)
+        {
+            toggleUiButtonText = toggleUiLeanButton.GetComponentInChildren<TextMeshProUGUI>();
+        }
+        if (toggleUiButtonText == null && toggleUiButton != null)
+        {
+            toggleUiButtonText = toggleUiButton.GetComponentInChildren<TextMeshProUGUI>();
         }
     }
 
