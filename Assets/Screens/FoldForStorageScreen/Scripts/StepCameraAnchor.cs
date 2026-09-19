@@ -109,16 +109,56 @@ public class StepCameraAnchor : MonoBehaviour
     public void AlignToSceneView()
     {
 #if UNITY_EDITOR
-        var sv = SceneView.lastActiveSceneView;
+        var sv = SceneView.lastActiveSceneView ?? (SceneView.sceneViews.Count > 0 ? (SceneView)SceneView.sceneViews[0] : null);
         if (sv != null)
         {
             Undo.RecordObject(transform, "Align Camera Anchor to SceneView");
-            transform.position = sv.camera.transform.position;
-            transform.rotation = sv.camera.transform.rotation;
-            fieldOfView = sv.camera.fieldOfView;
+            Vector3 camPos = sv.camera != null && sv.camera.transform.position != Vector3.zero
+                ? sv.camera.transform.position
+                : sv.pivot - sv.rotation * Vector3.forward * sv.size;
+            transform.position = camPos;
+            transform.rotation = sv.rotation;
+            if (sv.camera != null && sv.camera.fieldOfView > 10f)
+            {
+                fieldOfView = sv.camera.fieldOfView;
+            }
             if (previewCamera != null) previewCamera.fieldOfView = fieldOfView;
             EditorUtility.SetDirty(gameObject);
         }
+#endif
+    }
+
+    /// <summary>
+    /// Snaps the SceneView camera to look through this anchor directly at the target,
+    /// or centers the SceneView onto the anchor if focusAnchor is true.
+    /// </summary>
+    public void FrameInSceneView(bool focusAnchor = false)
+    {
+#if UNITY_EDITOR
+        var sv = SceneView.lastActiveSceneView ?? (SceneView.sceneViews.Count > 0 ? (SceneView)SceneView.sceneViews[0] : null);
+        if (sv == null) return;
+
+        if (focusAnchor)
+        {
+            sv.LookAt(transform.position, sv.rotation, 1.8f);
+        }
+        else
+        {
+            Vector3 pos = transform.position;
+            Quaternion rot = transform.rotation;
+            Vector3 target = lookAtTarget != null ? lookAtTarget.position : pos + transform.forward * 2.5f;
+
+            float dist = Vector3.Distance(pos, target);
+            if (dist < 0.2f) dist = 2.5f;
+
+            sv.LookAtDirect(target, rot, dist);
+            if (sv.camera != null && fieldOfView > 10f)
+            {
+                sv.camera.fieldOfView = fieldOfView;
+            }
+        }
+        sv.Repaint();
+        SceneView.RepaintAll();
 #endif
     }
 
