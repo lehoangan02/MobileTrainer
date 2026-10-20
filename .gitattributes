@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Drone model geometry: large, and text-format so git would CRLF-convert it
+*.obj filter=lfs diff=lfs merge=lfs -text
