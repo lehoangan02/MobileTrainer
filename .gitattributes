@@ -3,3 +3,8 @@
 
 # Drone model geometry: large, and text-format so git would CRLF-convert it
 *.obj filter=lfs diff=lfs merge=lfs -text
+
+# Animation data: large and text-format; -text stops CRLF conversion that makes
+# otherwise-identical clips diverge between checkouts/projects.
+*.anim filter=lfs diff=lfs merge=lfs -text
+*.controller -text
