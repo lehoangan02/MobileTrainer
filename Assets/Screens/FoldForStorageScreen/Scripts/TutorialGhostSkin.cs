@@ -403,6 +403,65 @@ public class TutorialGhostSkin : MonoBehaviour
     }
 
     /// <summary>
+    /// Highlights only the renderers sitting directly on the named transforms, leaving child parts
+    /// (hardware, fans, sliders) in the base material. Hands are never highlighted.
+    /// </summary>
+    public void HighlightByNamesOwnRenderersOnly(params string[] partNames)
+    {
+        ClearHighlights();
+        if (partNames == null || partNames.Length == 0) return;
+
+        EnsurePresetMaterialsLoaded();
+        if (highlightMaterial == null) return;
+
+        if (!cacheBuilt || transformCache.Count == 0)
+        {
+            BuildTransformCache();
+        }
+
+        foreach (var name in partNames)
+        {
+            if (string.IsNullOrEmpty(name)) continue;
+
+            List<Transform> roots = new();
+            if (transformCache.TryGetValue(name.Trim(), out var list))
+                roots.AddRange(list);
+            else
+            {
+                Transform found = FindChildRecursive(transform, name.Trim());
+                if (found != null) roots.Add(found);
+            }
+
+            foreach (var root in roots)
+            {
+                if (root == null || IsHand(root)) continue;
+                foreach (var r in root.GetComponents<Renderer>())
+                {
+                    ApplyMaterialToRenderer(r, highlightMaterial);
+                    currentHighlightedRenderers.Add(r);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Shows or hides the left/right ghost hand. Pass false to hide the hand that is idle in a step.
+    /// </summary>
+    public void SetHandsVisible(bool left, bool right)
+    {
+        SetHandRenderersEnabled("Ghost_HandLeft", left);
+        SetHandRenderersEnabled("Ghost_HandRight", right);
+    }
+
+    private void SetHandRenderersEnabled(string handRootName, bool visible)
+    {
+        Transform hand = FindChildRecursive(transform, handRootName);
+        if (hand == null) return;
+        foreach (var r in hand.GetComponentsInChildren<Renderer>(true))
+            r.enabled = visible;
+    }
+
+    /// <summary>
     /// Highlights the specified root transforms (and their child renderers, excluding hands) using highlightMaterial.
     /// </summary>
     public void HighlightParts(IEnumerable<Transform> targetRoots)

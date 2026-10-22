@@ -631,14 +631,34 @@ public class DeployTutorialManager : MonoBehaviour
             ? s.highlightPartNames
             : GetDefaultHighlightNames(index, s?.title, s?.clip);
 
+        // Sub-arm steps: highlight only the arm itself (not its fan/slider/latch children)
+        // plus the release button the other hand presses.
+        string clipName = s?.clip != null ? s.clip.name.ToLowerInvariant() : "";
+        bool isSubArmStep = clipName.Contains("_subarm");
+
         if (targets != null && targets.Length > 0)
         {
-            ghostSkin.HighlightByNames(targets);
+            if (isSubArmStep)
+            {
+                var withButton = new System.Collections.Generic.List<string>(targets);
+                withButton.Add(GetReleaseButtonName(clipName));
+                ghostSkin.HighlightByNamesOwnRenderersOnly(withButton.ToArray());
+            }
+            else
+                ghostSkin.HighlightByNames(targets);
         }
         else
         {
             ghostSkin.ClearHighlights();
         }
+    }
+
+    private static string GetReleaseButtonName(string clipName)
+    {
+        if (clipName.Contains("front_left")) return "ButtonLeftFront";
+        if (clipName.Contains("front_right")) return "Button_Right_Front";
+        if (clipName.Contains("back_left")) return "ButtonLeftBack";
+        return "Button_Back_Right";
     }
 
     public void RefreshCurrentHighlight()
@@ -730,7 +750,7 @@ public class DeployTutorialManager : MonoBehaviour
         {
             ("Deploy one landing gear", "Use the THUMB to push the button on each leg of the landing gear AND grab the leg AT THE SAME TIME to swing it outwards.", "unfold_open_landing_gear_2.anim", new[] { "Landing_Gear_Root_2" }),
             ("Deploy the other landing gear", "Use the THUMB to push the button on each leg of the landing gear AND grab the leg AT THE SAME TIME to swing it outwards.", "unfold_open_landing_gear_1.anim", new[] { "Landing_Gear_Root_1" }),
-            ("Swing out the front-left arm", "Use the THUMB to push the front-right release button AND grab the sub-arm AT THE SAME TIME to swing it outwards.", "unfold_open_front_left_subarm.anim", new[] { "Body_Front_Left" }),
+            ("Swing out the front-left arm", "Use the THUMB to push the front-left release button AND grab the sub-arm AT THE SAME TIME to swing it outwards.", "unfold_open_front_left_subarm.anim", new[] { "Body_Front_Left" }),
             ("Open the front-left latch", "Pinch the front-left latch and swing it fully open.", "unfold_open_front_left_latch.anim", new[] { "Clamp_Front_Left_Latch" }),
             ("Return the front-left slider", "Slide the front-left slider all the way home.", "unfold_slide_front_left_slider.anim", new[] { "Clamp_Front_Left_Slider" }),
             ("Close the front-left latch", "Swing the front-left latch shut to lock the slider.", "unfold_close_front_left_latch.anim", new[] { "Clamp_Front_Left_Latch" }),

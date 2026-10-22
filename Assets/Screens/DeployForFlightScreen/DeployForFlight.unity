@@ -7243,7 +7243,7 @@ MonoBehaviour:
       yaw: 75.00001
       fieldOfView: 55
   - title: Swing out the front-left arm
-    instruction: Use the THUMB to push the front-right release button AND grab the
+    instruction: Use the THUMB to push the front-left release button AND grab the
       sub-arm AT THE SAME TIME to swing it outwards.
     clip: {fileID: 7400000, guid: 59a7d351866a9bd44823fd8e36ebf2c3, type: 2}
     clipStart: 0
