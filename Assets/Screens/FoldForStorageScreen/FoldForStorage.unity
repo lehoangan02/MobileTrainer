@@ -8974,34 +8974,27 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -4299625302041532480, guid: 63d10a535aa014c4f9e3f04185131351, type: 3}
+  m_Mesh: {fileID: 4300000, guid: d62eb29994855484da750dff41b8b018, type: 2}
   m_Bones:
   - {fileID: 2039571411}
+  - {fileID: 239089614}
+  - {fileID: 727816175}
   - {fileID: 727816175}
   - {fileID: 115528759}
   - {fileID: 38025564}
-  - {fileID: 75160340}
+  - {fileID: 590913203}
+  - {fileID: 182726245}
+  - {fileID: 1413047423}
+  - {fileID: 556589266}
+  - {fileID: 1532860661}
+  - {fileID: 1022844119}
+  - {fileID: 1414472523}
+  - {fileID: 532839671}
+  - {fileID: 1496200555}
   - {fileID: 604059130}
   - {fileID: 1759354859}
   - {fileID: 1739334286}
   - {fileID: 798091612}
-  - {fileID: 48877376}
-  - {fileID: 239089614}
-  - {fileID: 653116192}
-  - {fileID: 1414472523}
-  - {fileID: 532839671}
-  - {fileID: 1496200555}
-  - {fileID: 1845725799}
-  - {fileID: 1754561103}
-  - {fileID: 556589266}
-  - {fileID: 1532860661}
-  - {fileID: 1022844119}
-  - {fileID: 399234886}
-  - {fileID: 147736759}
-  - {fileID: 590913203}
-  - {fileID: 182726245}
-  - {fileID: 1413047423}
-  - {fileID: 472317821}
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 2039571411}
   m_AABB:
@@ -14206,34 +14199,27 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -4179581466302418777, guid: 700142580560ace4cbddcacbae9ae39b, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 9e4109dbfa83c074d8cc6752d94eed89, type: 2}
   m_Bones:
   - {fileID: 1565035920}
+  - {fileID: 2065282089}
+  - {fileID: 306066307}
   - {fileID: 306066307}
   - {fileID: 282843330}
   - {fileID: 1507094068}
-  - {fileID: 1414757712}
+  - {fileID: 374464091}
+  - {fileID: 636946685}
+  - {fileID: 527138441}
+  - {fileID: 1388275568}
+  - {fileID: 170863460}
+  - {fileID: 311723110}
+  - {fileID: 851986882}
+  - {fileID: 2130710080}
+  - {fileID: 1454215067}
   - {fileID: 789954135}
   - {fileID: 307983268}
   - {fileID: 617954278}
   - {fileID: 1960962961}
-  - {fileID: 77016195}
-  - {fileID: 2065282089}
-  - {fileID: 1098003140}
-  - {fileID: 851986882}
-  - {fileID: 2130710080}
-  - {fileID: 1454215067}
-  - {fileID: 631954560}
-  - {fileID: 330024388}
-  - {fileID: 1388275568}
-  - {fileID: 170863460}
-  - {fileID: 311723110}
-  - {fileID: 255450519}
-  - {fileID: 1264739661}
-  - {fileID: 374464091}
-  - {fileID: 636946685}
-  - {fileID: 527138441}
-  - {fileID: 1838554908}
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 1565035920}
   m_AABB:
