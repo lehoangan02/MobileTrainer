@@ -7996,7 +7996,7 @@ MonoBehaviour:
   - {fileID: 1069378944}
   - {fileID: 581597803}
   applyOnAwake: 1
-  skipHands: 0
+  skipHands: 1
   debugLog: 0
   enableHotkeySwitching: 1
 --- !u!1 &880385598
@@ -8127,7 +8127,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 68d460493b537a34e8cdb5e0aee9a384, type: 2}
+  - {fileID: 2100000, guid: 79d52e9af9536294780be7cb6f3474bc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -12682,7 +12682,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 68d460493b537a34e8cdb5e0aee9a384, type: 2}
+  - {fileID: 2100000, guid: 79d52e9af9536294780be7cb6f3474bc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
