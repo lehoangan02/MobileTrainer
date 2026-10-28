@@ -102,7 +102,15 @@ public class TutorialSelectController : MonoBehaviour
     public void BackToStartScreen()
     {
         Debug.Log("[TutorialSelectController] BackToStartScreen invoked.");
-        Load("StartScreen");
+        if (sceneLoader != null)
+        {
+            // pops the scene history, so Back returns to whichever screen opened this one (the hub)
+            sceneLoader.GoBack();
+        }
+        else
+        {
+            Load("HomeHub");
+        }
     }
 
     private void Load(string sceneName)

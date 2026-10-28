@@ -22,6 +22,11 @@ public class SceneLoader : MonoBehaviour
     private static readonly Stack<string> sceneHistory = new Stack<string>();
     private static bool isTransitioning = false;
 
+    /// <summary>
+    /// Set by a screen that owns its own popups. Called on Back; return true if it consumed the press.
+    /// </summary>
+    public static System.Func<bool> BackHandler;
+
     private CanvasGroup canvasGroup;
 
     private void Awake()
@@ -55,7 +60,13 @@ public class SceneLoader : MonoBehaviour
                 return;
             }
 
-            // 2. Otherwise, navigate back to the previous scene
+            // 2. A screen-owned popup may consume the press
+            if (BackHandler != null && BackHandler())
+            {
+                return;
+            }
+
+            // 3. Otherwise, navigate back to the previous scene
             GoBack();
         }
     }
@@ -169,6 +180,11 @@ public class SceneLoader : MonoBehaviour
             case "DeployForFlightScreen":
                 return "TutorialSelectScreen";
             case "TutorialSelectScreen":
+            case "RoomScanLibrary":
+                return "HomeHub";
+            case "RoomScanDetail":
+                return "RoomScanLibrary";
+            case "HomeHub":
                 return "StartScreen";
             default:
                 return "";

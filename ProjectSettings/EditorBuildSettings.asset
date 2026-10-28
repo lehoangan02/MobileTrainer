@@ -20,6 +20,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Screens/HomeHubScreen/HomeHub.unity
+    guid: b746af7726bef4d30962af62917b560d
+  - enabled: 1
+    path: Assets/Screens/RoomScanScreen/RoomScanLibrary.unity
+    guid: 71da1d61466bd4908acf6d29d035465e
+  - enabled: 1
+    path: Assets/Screens/RoomScanScreen/RoomScanDetail.unity
+    guid: 0e8588894ea4240cc8432f1e7929d6d8
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -2201,7 +2201,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
   fadeOutDuration: 0.5
   fadeInDuration: 0.6
-  targetScene: TutorialSelectScreen
+  targetScene: HomeHub
   handleBackGesture: 1
   customFallbackBackScene: 
 --- !u!114 &1174776864
